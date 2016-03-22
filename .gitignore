@@ -1,4 +1,4 @@
 .vs
 packages
-NewsSwipesServer\bin
-NewsSwipesServer\obj
+NewsSwipesServer/bin
+NewsSwipesServer/obj
