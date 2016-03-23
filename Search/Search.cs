@@ -10,7 +10,8 @@ namespace Search
     {
         SearchServiceClient ServiceClient { get; set; }
 
-        public Search() : this(new SearchServiceClient("serviceName", new SearchCredentials("apiKey")))
+        public Search() 
+            : this(new SearchServiceClient("serviceName", new SearchCredentials("apiKey")))
         {
         }
 
@@ -19,9 +20,10 @@ namespace Search
             ServiceClient = serviceClient;
         }        
 
+
         public void UploadDocuments(string indexName, IEnumerable<Document> documents)
         {
-            SearchIndexClient indexClient = ServiceClient.Indexes.GetClient("hotels");
+            SearchIndexClient indexClient = ServiceClient.Indexes.GetClient(indexName);
 
             try
             {
