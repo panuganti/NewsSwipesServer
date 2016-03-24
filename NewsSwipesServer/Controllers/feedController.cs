@@ -35,16 +35,9 @@ namespace NewsSwipesServer.Controllers
 
         [HttpGet]
         [Route("feed/fetchpostdata/{url}")]
-        public ArticleData GetPostData(string url)
+        public string GetPostData(string url)
         {
-            return new ArticleData
-            {
-                Url = url,
-                Title = "Title",
-                Description = "Des",
-                ImageUrls = new[] { "" },
-                ArticleDate = DateTime.Now
-            };
+            return "hell world";
         }
 
         /*
