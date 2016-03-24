@@ -8,14 +8,14 @@ namespace NewsSwipesServer.Controllers
 {
     public class FeedController : ApiController
     {
-        Feeds _feeds;
+        Feed _feeds;
         Datastore _ds;
 
-        public FeedController() : this(new Datastore(), new Feeds())
+        public FeedController() : this(new Datastore(), new Feed())
         {
         }
 
-        public FeedController(Datastore ds, Feeds feeds)
+        public FeedController(Datastore ds, Feed feeds)
         {
             _ds = ds;
             _feeds = feeds;

@@ -4,32 +4,42 @@ using System.Linq;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
 using DataContracts.Search;
-using DataContracts;
 using System.Threading.Tasks;
 
 namespace Search
 {
-    public class Feeds
+    public class SearchIndex
     {
-        SearchServiceClient ServiceClient { get; set; }
         SearchIndexClient _indexClient;
 
-
-        public Feeds() 
-            : this(new SearchServiceClient("serviceName", new SearchCredentials("apiKey")).Indexes.GetClient("feeds"))
+        protected SearchIndex(string indexName) 
+            : this(new SearchServiceClient("newsswipes", new SearchCredentials("2F8F3CE4F1F440B7E792E51CDE103B17"))
+                  .Indexes.GetClient(indexName))
         {
         }
 
-        private Feeds(SearchIndexClient indexClient)
+        private SearchIndex(SearchIndexClient indexClient)
         {
             _indexClient = indexClient;
         }
 
-        public async Task<DocumentIndexResult> UploadDocuments(IEnumerable<Article> articles)
+        public async Task<DocumentIndexResult> UploadDocument<T>(T doc, string userId) where T : SearchDoc
         {
             try
             {
-                IndexBatch<Feed> batch = IndexBatch.MergeOrUpload(articles.Select(article => article.ToFeed("1")));
+                return await UploadDocuments(new[] { doc });
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public async Task<DocumentIndexResult> UploadDocuments<T>(IEnumerable<T> docs) where T : SearchDoc
+        {
+            try
+            {
+                IndexBatch<T> batch = IndexBatch.MergeOrUpload(docs);
                 var result = await _indexClient.Documents.IndexAsync(batch);
                 return result;
             }
@@ -45,17 +55,14 @@ namespace Search
             }
         }
 
-        public async Task<DocumentSearchResult<Feed>> SearchFeeds(string searchText, string filter = null)
+        public async Task<DocumentSearchResult<T>> Search<T>(string searchText, string filter = null) where T: SearchDoc
         {
-            // Execute search based on search text and optional filter
             var sp = new SearchParameters();
-
-            if (!String.IsNullOrEmpty(filter))
+            if (!string.IsNullOrEmpty(filter))
             {
                 sp.Filter = filter;
             }
-
-            DocumentSearchResult<Feed> response = await _indexClient.Documents.SearchAsync<Feed>(searchText, sp);
+            DocumentSearchResult<T> response = await _indexClient.Documents.SearchAsync<T>(searchText, sp);
             return response;
         }
     }

@@ -5,12 +5,8 @@ using System.Runtime.Serialization;
 namespace DataContracts.Search
 {
     [DataContract]
-    public class UserCredentials
+    public class UserCredentialsIndexDoc : SearchDoc
     {
-        [DataMember]
-        [JsonProperty(PropertyName = "id")]
-        public string Id { get; set; }
-
         [DataMember]
         [JsonProperty(PropertyName = "email")]
         public string Email { get; set; }

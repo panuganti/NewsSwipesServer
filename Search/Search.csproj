@@ -63,8 +63,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Feeds.cs" />
-    <Compile Include="Search.cs" />
+    <Compile Include="CredentialsIndex.cs" />
+    <Compile Include="SearchIndex.cs" />
+    <Compile Include="Feed.cs" />
+    <Compile Include="Images.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

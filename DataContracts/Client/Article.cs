@@ -37,18 +37,25 @@ namespace DataContracts
 
         public Feed ToFeed(string user)
         {
-            return new Feed
+            try
             {
-                Id = Guid.NewGuid().ToString(),
-                Title = Heading,
-                CreatedTime = DateTime.Now,
-                ImageUrl = Image, // TODO: Here, upload to g cloud and get new url
-                LandingPageUrl = OriginalLink,
-                CardStyle = (CardStyle)Enum.Parse(typeof(CardStyle), CardStyle),
-                PostedBy = user,
-                SharedBy = new string[] { },
-                LikedBy = new string[] { }
-            };
+                var feed = new Feed
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Title = Heading,
+                    CreatedTime = DateTime.Now,
+                    ImageUrl = Image, // TODO: Here, upload to g cloud and get new url
+                    LandingPageUrl = OriginalLink,
+                    CardStyle = CardStyle,
+                    PostedBy = user,
+                    SharedBy = new string[] { },
+                    LikedBy = new string[] { }
+                };
+                return feed;
+            }
+            catch (Exception e) {
+                throw e;
+            }
         }
     }
 

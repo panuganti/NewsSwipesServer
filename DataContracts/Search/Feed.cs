@@ -5,12 +5,8 @@ using System.Runtime.Serialization;
 namespace DataContracts.Search
 {
     [DataContract]
-    public class Feed
+    public class Feed : SearchDoc
     {
-        [DataMember]
-        [JsonProperty(PropertyName = "id")]
-        public string Id { get; set; }
-
         [DataMember]
         public string Title { get; set; }
 
@@ -27,7 +23,7 @@ namespace DataContracts.Search
         public string LandingPageUrl { get; set; }
 
         [DataMember]
-        public CardStyle CardStyle { get; set; }
+        public string CardStyle { get; set; }
 
         [DataMember]
         public string PostedBy { get; set; }
@@ -37,14 +33,5 @@ namespace DataContracts.Search
 
         [DataMember]
         public string[] LikedBy { get; set; }
-    }
-
-    [DataContract]
-    public enum CardStyle
-    {
-        [EnumMember]
-        Horizontal = 0,
-        [EnumMember]
-        Vertical
     }
 }
