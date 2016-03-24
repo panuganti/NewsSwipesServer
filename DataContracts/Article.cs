@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
+using DataContracts.Search;
 
 namespace DataContracts
 {
@@ -34,6 +34,22 @@ namespace DataContracts
         public DateTime LastActivity {get; set;}
         [DataMember]
         public double Score {get; set;}
+
+        public Feed ToFeed(string user)
+        {
+            return new Feed
+            {
+                Id = Guid.NewGuid().ToString(),
+                Title = Heading,
+                CreatedTime = DateTime.Now,
+                ImageUrl = Image, // TODO: Here, upload to g cloud and get new url
+                LandingPageUrl = OriginalLink,
+                CardStyle = (CardStyle)Enum.Parse(typeof(CardStyle), CardStyle),
+                PostedBy = user,
+                SharedBy = new string[] { },
+                LikedBy = new string[] { }
+            };
+        }
     }
 
     [DataContract]

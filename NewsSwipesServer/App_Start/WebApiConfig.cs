@@ -14,12 +14,6 @@ namespace NewsSwipesServer
             // Web API routes
             config.MapHttpAttributeRoutes();
 
-
-            config.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{action}/{request}"
-            );
-
             // Remove XML formatter to enable Json output
             config.Formatters.Remove(config.Formatters.XmlFormatter);
         }
