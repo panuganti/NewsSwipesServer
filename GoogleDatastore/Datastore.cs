@@ -11,9 +11,9 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace GoogleCloudSamples
+namespace GoogleDatastore
 {
-    public class StorageSample
+    public class Datastore
     {
         private const string projectId = "wwwarchishainnovatorscom";
         private const string bucketName = "www.archishainnovators.com";

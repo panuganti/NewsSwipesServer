@@ -1,20 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Web.Http;
 using DataContracts;
-using System.Runtime.Serialization;
 using Search;
-using Microsoft.Azure.Search;
-using System;
+using GoogleDatastore;
 
 namespace NewsSwipesServer.Controllers
 {
     public class FeedController : ApiController
     {
         Feeds _feeds;
-        
-        public FeedController()
+        Datastore _ds;
+
+        public FeedController() : this(new Datastore(), new Feeds())
         {
-            _feeds = new Feeds();
+        }
+
+        public FeedController(Datastore ds, Feeds feeds)
+        {
+            _ds = ds;
+            _feeds = feeds;
         }
 
         // POST feed/postarticle
@@ -24,6 +28,14 @@ namespace NewsSwipesServer.Controllers
         {
             var batch = _feeds.UploadDocuments(new Article[] { article });
             return new[] { "value2" };
+        }
+
+        [HttpPost]
+        [Route("feed/uploadimagefromurl")]
+        public bool UploadImageFromUrl([FromBody]UploadObject uploadObj)
+        {
+            _ds.Upload(uploadObj.Filename, uploadObj.Url).Wait();
+            return true;
         }
 
         [HttpGet]
