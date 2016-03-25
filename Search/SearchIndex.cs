@@ -80,6 +80,11 @@ namespace Search
             }
         }
 
+        public async Task<DocumentSearchResult<T>> SearchAsync<T>(string searchText, SearchParameters sp) where T : SearchDoc
+        {
+            return await _indexClient.Documents.SearchAsync<T>(searchText, sp);
+        }
+
         public async Task<DocumentSearchResult<T>> Search<T>(string searchText, string filter = null) where T: SearchDoc
         {
             var sp = new SearchParameters();

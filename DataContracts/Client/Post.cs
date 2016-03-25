@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using System.Collections.Generic;
 using DataContracts.Search;
 
 namespace DataContracts.Client
 {
     [DataContract]
-    public class Image
+    public class DbImage
     {
         [DataMember]
         public string Id { get; set; }
@@ -16,22 +15,52 @@ namespace DataContracts.Client
         public int Width { get; set; }
         [DataMember]
         public int Height { get; set; }
-        [DataMember]
-        public bool isFromDb { get; set; }
-    }
+     }
 
     [DataContract]
     public class PostPreview : Post
     {
         [DataMember]
-        public Image[] Images { get; set; }
+        public DbImage[] ImagesFromDb { get; set; }
+        [DataMember]
+        public string[] Images { get; set; }
     }
 
     [DataContract]
     public class UnpublishedPost : Post
     {
         [DataMember]
-        public Image Image { get; set; }
+        public DbImage Image { get; set; }
+
+        [DataMember]
+        public string[] Streams { get; set; }
+
+        [DataMember]
+        public string[] Tags { get; set; }
+
+        [DataMember]
+        public string Language { get; set; }
+
+        [DataMember]
+        public string PostedBy { get; set; }
+
+        public FeedsIndexDoc ToFeedsIndexDoc()
+        {
+            var doc = new FeedsIndexDoc
+            {
+                Id = Guid.NewGuid().ToString(),
+                Title = Heading,
+                Text = Snippet,
+                CreatedTime = DateTime.UtcNow,
+                ImageUrl = Image.Url,
+                LandingPageUrl = OriginalLink,
+                CardStyle = CardStyle, // TODO:
+                PostedBy = PostedBy,
+                SharedBy = new string[] { },
+                LikedBy = new string[] { }
+            };
+            return doc;
+        }
     }
 
     [DataContract]

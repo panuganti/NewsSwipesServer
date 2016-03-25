@@ -1,5 +1,4 @@
 ﻿using System;
-using Newtonsoft.Json;
 using System.Runtime.Serialization;
 
 namespace DataContracts.Search
@@ -33,5 +32,15 @@ namespace DataContracts.Search
 
         [DataMember]
         public string[] LikedBy { get; set; }
+
+        // TODO: Add fields to Index
+        [DataMember]
+        public string[] Streams { get; set; }
+
+        [DataMember]
+        public string Language { get; set; }
+
+        [DataMember]
+        public string Tags { get; set; }
     }
 }

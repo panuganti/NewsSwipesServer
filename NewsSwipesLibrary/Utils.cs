@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
+using HtmlAgilityPack;
+using DataContracts.Client;
 
 namespace NewsSwipesLibrary
 {
     public class Utils
     {
-        public ArticleData GetArticleData(string url)
+        public PostPreview GetArticleData(string url)
         {
             var uri = new Uri(url);
             switch(uri.Host)
@@ -15,26 +17,32 @@ namespace NewsSwipesLibrary
             }
         }
 
-        public ArticleData TimesOfIndiaExtractor(string url)
+        public PostPreview TimesOfIndiaExtractor(string url)
         {
-            throw new NotImplementedException();
+            return DefaultArticleExtractor(url); // TODO:
         }
 
-        public ArticleData DefaultArticleExtractor(string url)
+        public PostPreview DefaultArticleExtractor(string url)
         {
             try
             {
                 var html = new HtmlDocument();
                 html.Load(url);
                 var titleNode = html.DocumentNode.Descendants("title").First();
-                var images = html.DocumentNode.Descendants("img").Where(img => img.Attributes.Contains("src")).Select(img => img.Attributes["src"].Value);
+                var images = html.DocumentNode.Descendants("img")
+                    .Where(img => img.Attributes.Contains("src")).Select(img => img.Attributes["src"].Value);
 
-                return new ArticleData
+                var postPreview = new PostPreview
                 {
-                    Title = titleNode.InnerText,
-                    ArticleDate = DateTime.Now,
-                    ImageUrls = images.ToArray()
+                    Heading = titleNode.InnerText,
+                    Date = DateTime.Now.ToUniversalTime().ToString(),
+                    CardStyle = "Horizontal", // TODO: Enum
+                    Snippet = "", // TODO:
+                    OriginalLink = url,
+                    Images = images.ToArray(), // TODO: Filter out bad res. images
+                    ImagesFromDb = new DbImage[] { } // TODO:
                 };
+                return postPreview;
             }
             catch (Exception e)
             {
