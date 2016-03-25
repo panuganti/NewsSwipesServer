@@ -4,6 +4,7 @@ using DataContracts.Search;
 using DataContracts.Client;
 using Search;
 using GoogleDatastore;
+using System;
 
 namespace NewsSwipesServer.Controllers
 {
@@ -22,39 +23,67 @@ namespace NewsSwipesServer.Controllers
             _feeds = feeds;
         }
 
+        #region Publishing
+        [HttpGet]
+        [Route("feed/PreviewArticle/{url}")]
+        public PostPreview PreviewArticle(string url)
+        {
+            throw new NotImplementedException();
+        }
+
         // POST feed/postarticle
         [HttpPost]
         [Route("feed/postarticle")]
-        public IEnumerable<string> myAction([FromBody]Article article)
+        public bool PostArticle([FromBody]UnpublishedPost post)
         {
-            IEnumerable<FeedsIndexDoc> feeds = new FeedsIndexDoc[] { };
-            var batch = _feeds.UploadDocuments(feeds);
-            return new[] { "value2" };
-        }
-
-        /*
-        [HttpPost]
-        [Route("feed/uploadimagefromurl")]
-        public bool UploadImageFromUrl([FromBody]UploadObject uploadObj)
-        {
-            _ds.Upload(uploadObj.Filename, uploadObj.Url).Wait();
-            return true;
-        }
-        */
-
-        [HttpGet]
-        [Route("feed/getfeed/{request}")]
-        public IEnumerable<string> GetNewsFeed(string request)
-        {
-            return new[] { "value1", "value2" };
+            throw new NotImplementedException();
         }
 
         [HttpGet]
         [Route("feed/fetchpostdata/{url}")]
-        public string GetPostData(string url)
+        public PostPreview GetPostData(string url)
         {
-            return "hell world";
+            throw new NotImplementedException();
         }
+        #endregion Publishing
+
+        #region Feed
+        [HttpGet]
+        [Route("feed/getfeed/{lang}/{skip}")]
+        public PublishedPost[] GetNewsFeed(string lang, int skip)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet]
+        [Route("feed/timeline/{userId}/{skip}")]
+        public PublishedPost[] GetTimeline(string userI, int skip)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion Feed
+
+        #region UserAction
+        [HttpPost]
+        [Route("feed/postarticle")]
+        public bool AddUserReaction([FromBody]UserReaction reaction)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion UserAction
+
+        /*
+[HttpPost]
+[Route("feed/uploadimagefromurl")]
+public bool UploadImageFromUrl([FromBody]UploadObject uploadObj)
+{
+    _ds.Upload(uploadObj.Filename, uploadObj.Url).Wait();
+    return true;
+}
+*/
+
 
         /*
         [HttpGet]
