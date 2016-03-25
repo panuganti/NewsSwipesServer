@@ -65,8 +65,8 @@
   <ItemGroup>
     <Compile Include="CredentialsIndex.cs" />
     <Compile Include="SearchIndex.cs" />
-    <Compile Include="Feed.cs" />
-    <Compile Include="Images.cs" />
+    <Compile Include="FeedsIndex.cs" />
+    <Compile Include="ImagesIndex.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace DataContracts.Search
 {
     [DataContract]
-    public class Feed : SearchDoc
+    public class FeedsIndexDoc : SearchDoc
     {
         [DataMember]
         public string Title { get; set; }

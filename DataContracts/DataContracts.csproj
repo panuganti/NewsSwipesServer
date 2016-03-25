@@ -48,9 +48,10 @@
     <Compile Include="Client\Article.cs" />
     <Compile Include="Client\CardType.cs" />
     <Compile Include="Datastore\UploadObject.cs" />
-    <Compile Include="Search\Feed.cs" />
-    <Compile Include="Search\Image.cs" />
-    <Compile Include="Search\UserCredentials.cs" />
+    <Compile Include="Search\FeedsIndexDoc.cs" />
+    <Compile Include="Search\SearchDoc.cs" />
+    <Compile Include="Search\ImagesIndexDoc.cs" />
+    <Compile Include="Search\UserCredentialsIndexDoc.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
