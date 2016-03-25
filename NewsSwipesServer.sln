@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleDatastore", "GoogleDa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{8F5B6647-E52F-4BE7-ABD2-F6F0DE7C87EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsSwipesLibrary", "NewsSwipesLibrary\NewsSwipesLibrary.csproj", "{4D1E4366-0CC8-4AF3-9AE4-17A7AFF7FF52}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{8F5B6647-E52F-4BE7-ABD2-F6F0DE7C87EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F5B6647-E52F-4BE7-ABD2-F6F0DE7C87EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F5B6647-E52F-4BE7-ABD2-F6F0DE7C87EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D1E4366-0CC8-4AF3-9AE4-17A7AFF7FF52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D1E4366-0CC8-4AF3-9AE4-17A7AFF7FF52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D1E4366-0CC8-4AF3-9AE4-17A7AFF7FF52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D1E4366-0CC8-4AF3-9AE4-17A7AFF7FF52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using HtmlAgilityPack;
-using DataContracts;
 
 namespace NewsSwipesLibrary
 {

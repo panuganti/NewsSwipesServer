@@ -45,8 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\Article.cs" />
+    <Compile Include="Client\App.cs" />
+    <Compile Include="Client\Entity.cs" />
+    <Compile Include="Client\Post.cs" />
     <Compile Include="Client\CardType.cs" />
+    <Compile Include="Client\Stream.cs" />
+    <Compile Include="Client\User.cs" />
     <Compile Include="Datastore\UploadObject.cs" />
     <Compile Include="Search\FeedsIndexDoc.cs" />
     <Compile Include="Search\SearchDoc.cs" />
