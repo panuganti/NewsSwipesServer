@@ -23,7 +23,31 @@ namespace Search
             _indexClient = indexClient;
         }
 
-        public async Task<DocumentIndexResult> UploadDocument<T>(T doc, string userId) where T : SearchDoc
+        public async Task<T> LookupDocument<T>(string key) where T : SearchDoc
+        {
+            try
+            {
+                return await _indexClient.Documents.GetAsync<T>(key);
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public async Task<DocumentIndexResult> UploadDocument<T>(T doc) where T : SearchDoc
+        {
+            try
+            {
+                return await UploadDocuments(new[] { doc });
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public async Task<DocumentIndexResult> UpdateDocument<T>(T doc) where T : SearchDoc
         {
             try
             {

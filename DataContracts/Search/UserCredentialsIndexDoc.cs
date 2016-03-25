@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
+using DataContracts.Client;
 
 namespace DataContracts.Search
 {
@@ -30,5 +31,24 @@ namespace DataContracts.Search
         [DataMember]
         [JsonProperty(PropertyName = "canPost")]
         public bool CanPost { get; set; }
+
+        public UserCredentialsIndexDoc() { }
+
+        public UserCredentialsIndexDoc(UserCredentials credentials)
+        {
+            Id = credentials.Email; // TODO: Change to assigning a guid
+            Email = credentials.Email;
+            Password = credentials.Password;
+        }
+
+        public User ToUser()
+        {
+            return new User
+            {
+                Id = Id,
+                Email = Email,
+                Language = Language
+            };
+        }
     }
 }

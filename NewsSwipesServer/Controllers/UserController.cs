@@ -1,41 +1,84 @@
 ﻿using System;
 using System.Web.Http;
-using DataContracts;
+using DataContracts.Client;
+using DataContracts.Search;
+using Search;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace NewsSwipesServer.Controllers
 {
-    public class UserController : ApiController
+    public class UserController : Controller
     {
-        // GET api/user/GetUserInfo/request
-        [HttpGet]
-        public User GetUserInfo(string request)
+        private CredentialsIndex _credentialsIndex;
+        
+        public UserController()
+        { }
+
+        private UserController(CredentialsIndex credentialsIndex)
         {
-            throw new NotImplementedException();
+            _credentialsIndex = credentialsIndex;
         }
 
-        public CredentialsValidation ValidateCredentials(int id)
+        // GET api/user/GetUserInfo/request
+        [HttpGet]
+        [Route("user/CheckIfEmailExists")]
+        public async Task<bool> CheckIfEmailExists(string email)
         {
-            throw new NotImplementedException();
+            var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("email eq {0}", email));
+            if (docs.Count != 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        [HttpPost]
+        [Route("user/ValidateCredentials")]
+        public async Task<User> ValidateCredentials([FromBody]UserCredentials credentials)
+        {
+            var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("email eq {0}", credentials.Email));
+            if (docs.Count == 1)
+            {
+                var storedCredentials = docs.Results.First().Document;
+                if (storedCredentials.Password == credentials.Password)
+                {
+                    return storedCredentials.ToUser();
+                }
+                throw new Exception("Password Incorrect");
+            }
+            throw new Exception("None or Duplicate Users found");
         }
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
+        [Route("user/SignUp")]
+        public async Task<User> SignUp([FromBody]UserCredentials credentials)
         {
+            bool isAlreadySignedUp = await CheckIfEmailExists(credentials.Email);
+            if (isAlreadySignedUp)
+            {
+                throw new Exception(string.Format("Email {0} already a user", credentials.Email));
+            }
+            // TODO: Check if password has min requirements
+            var uploadedDoc = await _credentialsIndex.UploadDocument(new UserCredentialsIndexDoc(credentials));
+            if (!uploadedDoc.Results.First().Succeeded)
+            {
+                throw new Exception(string.Format("Sorry, could not sign you up. Please try again", credentials.Email));
+            }
+
+            // If Signup success
+            var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("email eq {0}", credentials.Email));
+            return docs.Results.First().Document.ToUser();
         }
 
-        #region PUT and DELETE
-        /*
-        // PUT api/values/5
-        public void Put(int id, [FromBody]string value)
+        // POST api/values
+        [HttpPost]
+        [Route("user/UpdateUserProfile")]
+        public async Task<bool> UpdateUserProfile([FromBody]User user)
         {
+            var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
+            return uploadedDoc.Results.First().Succeeded;
         }
-
-        // DELETE api/values/5
-        public void Delete(int id)
-        {
-        }
-        */
-        #endregion PUT and DELETE
     }
 }

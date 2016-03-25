@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace DataContracts.Search
 {
     [DataContract]
-    public class Image : SearchDoc
+    public class ImagesIndexDoc : SearchDoc
     {
         [DataMember]
         [JsonProperty(PropertyName = "tags")]

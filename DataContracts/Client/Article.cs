@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
 using DataContracts.Search;
 
-namespace DataContracts
+namespace DataContracts.Client
 {
     [DataContract]
     public class Article
@@ -35,11 +33,11 @@ namespace DataContracts
         [DataMember]
         public double Score {get; set;}
 
-        public Feed ToFeed(string user)
+        public FeedsIndexDoc ToFeed(string user)
         {
             try
             {
-                var feed = new Feed
+                var feed = new FeedsIndexDoc
                 {
                     Id = Guid.NewGuid().ToString(),
                     Title = Heading,
@@ -63,12 +61,22 @@ namespace DataContracts
     public class User
     {
         [DataMember]
-        public int Id {get; set;}
+        public string Id {get; set;}
         [DataMember]
         public string Email {get; set;}
         [DataMember]
-        public string PrimaryLanguage {get; set;}    
-}
+        public string Language {get; set;}           
+
+        public UserCredentialsIndexDoc ToUserIndexDoc()
+        {
+            return new UserCredentialsIndexDoc()
+            {
+                Id = Id,
+                Email = Email,
+                Language = Language
+            };
+        }
+    }
 
     [DataContract]
     public class UserCredentials

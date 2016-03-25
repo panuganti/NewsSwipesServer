@@ -39,7 +39,7 @@ namespace Test
             image.SourceUrl = "http://i.ndtvimg.com/i/2016-02/arun-jaitley-budget_650x400_51456737432.jpg";
             image.Tags = new string[] { "Jaitley" };
             image.Url = "https://storage.googleapis.com/www.archishainnovators.com/images/image.jpeg";
-            var imageIndex = new Images();
+            var imageIndex = new ImagesIndex();
             imageIndex.UploadDocument(image).Wait();
         }
 
