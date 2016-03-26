@@ -3,9 +3,11 @@ using System.Web.Http;
 using DataContracts.Client;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Http.Cors;
 
 namespace NewsSwipesServer.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class ConfigController : Controller
     {        
         public ConfigController()

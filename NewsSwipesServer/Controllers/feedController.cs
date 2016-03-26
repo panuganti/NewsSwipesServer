@@ -9,9 +9,11 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.Azure.Search.Models;
+using System.Web.Http.Cors;
 
 namespace NewsSwipesServer.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class FeedController : Controller
     {
         FeedsIndex _feedsIndex;
@@ -29,10 +31,19 @@ namespace NewsSwipesServer.Controllers
             _utils = utils;
         }
 
-        #region Publishing
+        #region Test
         [HttpGet]
-        [Route("feed/PreviewArticle/{url}")]
-        public PostPreview PreviewArticle(string url)
+        [Route("feed/getfeed")]
+        public string[] GetFeed()
+        {
+            return new[] { "value1", "value2" };
+        }
+        #endregion Test
+
+            #region Publishing
+        [HttpPost]
+        [Route("feed/PreviewArticle")]
+        public PostPreview PreviewArticle([FromBody] string url)
         {
             return _utils.GetArticleData(url);
         }

@@ -5,9 +5,11 @@ using DataContracts.Search;
 using Search;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Web.Http.Cors;
 
 namespace NewsSwipesServer.Controllers
 {
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class UserController : Controller
     {
         private CredentialsIndex _credentialsIndex;

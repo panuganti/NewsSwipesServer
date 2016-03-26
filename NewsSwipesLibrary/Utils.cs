@@ -2,6 +2,9 @@
 using System.Linq;
 using HtmlAgilityPack;
 using DataContracts.Client;
+using System.Net;
+using System.IO;
+using System.Text;
 
 namespace NewsSwipesLibrary
 {
@@ -22,15 +25,47 @@ namespace NewsSwipesLibrary
             return DefaultArticleExtractor(url); // TODO:
         }
 
+        private string GetHtmlFromUrl(string urlAddress)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(urlAddress);
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                System.IO.Stream receiveStream = response.GetResponseStream();
+                StreamReader readStream = null;
+
+                if (response.CharacterSet == null)
+                {
+                    readStream = new StreamReader(receiveStream);
+                }
+                else
+                {
+                    readStream = new StreamReader(receiveStream, Encoding.GetEncoding(response.CharacterSet));
+                }
+
+                string data = readStream.ReadToEnd();
+
+                response.Close();
+                readStream.Close();
+                return data;
+            }
+            throw new Exception("Fetching Url Failed");
+        }
+
         public PostPreview DefaultArticleExtractor(string url)
         {
             try
             {
-                var html = new HtmlDocument();
-                html.Load(url);
-                var titleNode = html.DocumentNode.Descendants("title").First();
-                var images = html.DocumentNode.Descendants("img")
-                    .Where(img => img.Attributes.Contains("src")).Select(img => img.Attributes["src"].Value);
+                var htmlDoc = new HtmlDocument();
+                string html = GetHtmlFromUrl(url);
+                htmlDoc.LoadHtml(html);
+                var titleNode = htmlDoc.DocumentNode.Descendants("title").First();
+
+                var images = htmlDoc.DocumentNode.Descendants("img")
+                    .Where(img => img.Attributes.Contains("src"))
+                    .Select(img => new Uri(new Uri(url), img.Attributes["src"].Value).AbsoluteUri).Distinct();
+                
 
                 var postPreview = new PostPreview
                 {
