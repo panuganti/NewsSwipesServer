@@ -40,22 +40,21 @@ namespace NewsSwipesServer.Controllers
         }
         #endregion Test
 
-            #region Publishing
+        #region Publishing
+        [HttpPost]
+        [Route("feed/PostArticle")]
+        public async Task<bool> PostArticle([FromBody] UnpublishedPost post)
+        {
+            FeedsIndexDoc doc = post.ToFeedsIndexDoc();
+            var uploadedDoc = await _feedsIndex.UploadDocument(doc);
+            return uploadedDoc.Results.First().Succeeded;            
+        }
+
         [HttpPost]
         [Route("feed/PreviewArticle")]
         public PostPreview PreviewArticle([FromBody] string url)
         {
             return _utils.GetArticleData(url);
-        }
-
-        // POST feed/postarticle
-        [HttpPost]
-        [Route("feed/postarticle")]
-        public async Task<bool> PostArticle([FromBody]UnpublishedPost post)
-        {
-            FeedsIndexDoc doc = post.ToFeedsIndexDoc();
-            var uploadedDoc = await _feedsIndex.UploadDocument(doc);
-            return uploadedDoc.Results.First().Succeeded;
         }
         #endregion Publishing
 
@@ -88,7 +87,7 @@ namespace NewsSwipesServer.Controllers
 
         #region UserAction
         [HttpPost]
-        [Route("feed/postarticle")]
+        [Route("feed/AddUserReaction")]
         public bool AddUserReaction([FromBody]UserReaction reaction)
         {
             throw new NotImplementedException();

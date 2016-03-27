@@ -5,12 +5,10 @@ using DataContracts.Search;
 namespace DataContracts.Client
 {
     [DataContract]
-    public class DbImage
+    public class DbImage : ImageEntity
     {
         [DataMember]
         public string Id { get; set; }
-        [DataMember]
-        public string Url { get; set; }
         [DataMember]
         public int Width { get; set; }
         [DataMember]
@@ -18,7 +16,16 @@ namespace DataContracts.Client
      }
 
     [DataContract]
-    public class PostPreview : Post
+    public class ImageEntity
+    {
+        [DataMember]
+        public string Url { get; set; }
+        [DataMember]
+        public string[] Tags { get; set; }
+    }
+
+    [DataContract]
+    public class PostPreview : PostEntity
     {
         [DataMember]
         public DbImage[] ImagesFromDb { get; set; }
@@ -27,10 +34,10 @@ namespace DataContracts.Client
     }
 
     [DataContract]
-    public class UnpublishedPost : Post
+    public class UnpublishedPost : PostEntity
     {
         [DataMember]
-        public DbImage Image { get; set; }
+        public ImageEntity Image { get; set; }
 
         [DataMember]
         public string[] Streams { get; set; }
@@ -64,7 +71,7 @@ namespace DataContracts.Client
     }
 
     [DataContract]
-    public class Post
+    public class PostEntity
     {
         [DataMember]
         public string Date { get; set; }
@@ -76,37 +83,5 @@ namespace DataContracts.Client
         public string Snippet { get; set; }
         [DataMember]
         public string OriginalLink { get; set; }
-    }
-
-    [DataContract]
-    public class PublishedPost : UnpublishedPost
-    {
-        [DataMember]
-        public string[] Likes { get; set; }
-        [DataMember]
-        public string[] ReTweets { get; set; }
-
-        public FeedsIndexDoc ToFeed(string user)
-        {
-            try
-            {
-                var feed = new FeedsIndexDoc
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Title = Heading,
-                    CreatedTime = DateTime.Now,
-                    ImageUrl = Image.Url, // TODO: Here, upload to g cloud and get new url
-                    LandingPageUrl = OriginalLink,
-                    CardStyle = CardStyle,
-                    PostedBy = user,
-                    SharedBy = new string[] { },
-                    LikedBy = new string[] { }
-                };
-                return feed;
-            }
-            catch (Exception e) {
-                throw e;
-            }
-        }
     }
 }
