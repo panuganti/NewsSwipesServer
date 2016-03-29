@@ -84,5 +84,25 @@ namespace NewsSwipesLibrary
                 throw e;
             }
         }
+
+        public string[] ExtractImages(string url)
+        {
+            try
+            {
+                var htmlDoc = new HtmlDocument();
+                string html = GetHtmlFromUrl(url);
+                htmlDoc.LoadHtml(html);
+                var images = htmlDoc.DocumentNode.Descendants("img")
+                    .Where(img => img.Attributes.Contains("src"))
+                    .Select(img => new Uri(new Uri(url), img.Attributes["src"].Value).AbsoluteUri).Distinct();
+
+                return images.ToArray();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+        }
     }
 }

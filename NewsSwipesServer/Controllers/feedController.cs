@@ -19,15 +19,23 @@ namespace NewsSwipesServer.Controllers
         FeedsIndex _feedsIndex;
         Datastore _ds;
         Utils _utils;
+        Feeds _feeds;
 
         public FeedController() : this(new Datastore(), new FeedsIndex(), new Utils())
         {
         }
 
-        public FeedController(Datastore ds, FeedsIndex feeds, Utils utils)
+        private FeedController(Datastore ds, FeedsIndex feedsIndex, Utils utils)
+            :this(ds, feedsIndex, new Feeds(utils, new FeedsIndex()), utils)
+        {
+
+        } 
+
+        private FeedController(Datastore ds, FeedsIndex feedsIndex, Feeds feeds, Utils utils)
         {
             _ds = ds;
-            _feedsIndex = feeds;
+            _feedsIndex = feedsIndex;
+            _feeds = feeds;
             _utils = utils;
         }
 
@@ -58,10 +66,10 @@ namespace NewsSwipesServer.Controllers
         }
 
         [HttpPost]
-        [Route("feed/PreviewArticleFromFeed")]
-        public PostPreview PreviewArticleFromFeed([FromBody] string language)
+        [Route("feed/FetchFromFeedStream")]
+        public async Task<PostPreview> PreviewArticleFromFeed([FromBody] string feedStream)
         {
-            return _utils.GetArticleData(language);
+            return await _feeds.LoadNextFeed(feedStream);
         }
         #endregion Publishing
 
