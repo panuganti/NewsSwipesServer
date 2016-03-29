@@ -53,12 +53,6 @@ namespace NewsSwipesLibrary
             throw new Exception("Fetching Url Failed");
         }
 
-        bool IsAbsoluteUrl(string url)
-        {
-            Uri result;
-            return Uri.TryCreate(url, UriKind.Absolute, out result);
-        }
-
         public PostPreview DefaultArticleExtractor(string url)
         {
             try
@@ -70,10 +64,6 @@ namespace NewsSwipesLibrary
 
                 var images = htmlDoc.DocumentNode.Descendants("img")
                     .Where(img => img.Attributes.Contains("src"))
-                    .Where(img => {
-                        if (IsAbsoluteUrl(img.Attributes["src"].Value) && (new Uri(img.Attributes["src"].Value).Host == new Uri(url).Host))
-                            { return false; } else { return true; }
-                    })
                     .Select(img => new Uri(new Uri(url), img.Attributes["src"].Value).AbsoluteUri).Distinct();
                 
 
