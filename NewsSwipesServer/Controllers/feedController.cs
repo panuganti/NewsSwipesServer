@@ -56,6 +56,13 @@ namespace NewsSwipesServer.Controllers
         {
             return _utils.GetArticleData(url);
         }
+
+        [HttpPost]
+        [Route("feed/PreviewArticleFromFeed")]
+        public PostPreview PreviewArticleFromFeed([FromBody] string language)
+        {
+            return _utils.GetArticleData(language);
+        }
         #endregion Publishing
 
         #region Feed
