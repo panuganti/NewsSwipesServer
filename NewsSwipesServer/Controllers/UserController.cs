@@ -24,7 +24,7 @@ namespace NewsSwipesServer.Controllers
 
         // GET api/user/GetUserInfo/request
         [HttpGet]
-        [Route("user/CheckIfEmailExists")]
+        [Route("user/CheckIfEmailExists/{email}")]
         public async Task<bool> CheckIfEmailExists(string email)
         {
             var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("email eq {0}", email));
@@ -81,6 +81,30 @@ namespace NewsSwipesServer.Controllers
         {
             var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
             return uploadedDoc.Results.First().Succeeded;
+        }
+
+        [HttpGet]
+        [Route("user/GetStreams/{userId}")]
+        public async Task<IEnumerable<Stream>> GetStreams(string userId)
+        {
+            var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("userid eq {0}", userId.ToLower()));
+            if (docs.Count == 1)
+            {
+                var storedUser = docs.Results.First().Document;
+                return storedUser.Streams;
+            }
+        }
+
+        [HttpGet]
+        [Route("user/GetUserInfo/{userId}")]
+        public async Task<User> GetUserInfo(string userId)
+        {
+            var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("userid eq {0}", userId.ToLower()));
+            if (docs.Count == 1)
+            {
+                var storedUser = docs.Results.First().Document;
+                return storedUser.ToUser();
+            }
         }
     }
 }

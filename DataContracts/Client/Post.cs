@@ -53,19 +53,20 @@ namespace DataContracts.Client
 
         public FeedsIndexDoc ToFeedsIndexDoc()
         {
-            var doc = new FeedsIndexDoc
+            var doc = new FeedsIndexDoc();
+
+            doc.Id = Guid.NewGuid().ToString();
+            doc.Title = Heading.ToLower();
+            doc.Text = Snippet.ToLower();
+            doc.CreatedTime = DateTime.UtcNow;
+            doc.ImageUrl = Image.Url.ToLower();
+                doc.LandingPageUrl = OriginalLink.ToLower();
+            doc.CardStyle = CardStyle.ToLower();
+            if (doc.PostedBy != null) // TODO: Remove
             {
-                Id = Guid.NewGuid().ToString(),
-                Title = Heading,
-                Text = Snippet,
-                CreatedTime = DateTime.UtcNow,
-                ImageUrl = Image.Url,
-                LandingPageUrl = OriginalLink,
-                CardStyle = CardStyle, // TODO:
-                PostedBy = PostedBy,
-                SharedBy = new string[] { },
-                LikedBy = new string[] { }
-            };
+                doc.PostedBy = PostedBy.ToLower();
+            }
+            doc.Language = Language.ToLower();
             return doc;
         }
     }

@@ -79,7 +79,10 @@ namespace NewsSwipesServer.Controllers
         public async Task<DocumentSearchResult<FeedsIndexDoc>> GetNewsFeed(string lang, int skip)
         {
             var sp = new SearchParameters() {
-                Filter = String.Format("lang eq {0}", lang)
+                Filter = String.Format("lang eq {0}", lang),
+                Top = 100,
+                Skip = skip,
+                OrderBy = new List<string> { "createddate" }
             };
             var feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*",sp);
             return feeds;
@@ -92,6 +95,8 @@ namespace NewsSwipesServer.Controllers
             var sp = new SearchParameters()
             {
                 Filter = string.Format("createdby eq {0}", userId),
+                Top = 100,
+                Skip = skip,
                 OrderBy = new List<string> { "createddate" }
             };
             var feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
@@ -103,7 +108,7 @@ namespace NewsSwipesServer.Controllers
         #region UserAction
         [HttpPost]
         [Route("feed/AddUserReaction")]
-        public bool AddUserReaction([FromBody]UserReaction reaction)
+        public int AddUserReaction([FromBody]UserReaction reaction)
         {
             throw new NotImplementedException();
         }

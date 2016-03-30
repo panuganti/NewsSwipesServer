@@ -69,10 +69,10 @@ namespace NewsSwipesLibrary
                 try {
                     var sp = new SearchParameters()
                     {
-                        Filter = String.Format("LandingPageUrl eq '{0}'", feed.Link)
+                        Filter = String.Format("landingpageurl eq '{0}'", feed.Link.ToLower())
                     };
                     var response = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
-                    if (response.Count > 0) { continue; }
+                    if (response.Results.Count() > 0) { continue; } // Instead get totalcount
                     return ToPostPreview(feed);
                 }
                 catch(Exception e)

@@ -14,20 +14,20 @@ namespace NewsSwipesServer.Controllers
         { }
 
         [HttpGet]
-        [Route("user/GetLabels/{lang}")]
+        [Route("config/GetLabels/{lang}")]
         public Dictionary<string, string> GetLabels(string lang)
         {
             throw new NotImplementedException();
         }
 
         [HttpGet]
-        [Route("user/GetStreams/{lang}")]
+        [Route("config/GetStreams/{lang}")]
         public IEnumerable<Stream> GetStreams(string lang)
         {
             return _streams.Where(s => s.Lang.ToLower() == lang.ToLower());
         }
 
-        [Route("user/GetAllStreams")]
+        [Route("config/GetAllStreams")]
         public IEnumerable<Stream> GetAllStreams(string lang)
         {
             return _streams;

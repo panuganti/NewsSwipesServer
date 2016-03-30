@@ -25,12 +25,16 @@ namespace DataContracts.Search
         public string Name { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "profileImage")]
+        [JsonProperty(PropertyName = "profileimage")]
         public string ProfileImage { get; set; }
 
         [DataMember]
         [JsonProperty(PropertyName = "canPost")]
         public bool CanPost { get; set; }
+
+        [DataMember]
+        [JsonProperty(PropertyName = "streams")]
+        public string[] Streams { get; set; }
 
         public UserCredentialsIndexDoc() { }
 
