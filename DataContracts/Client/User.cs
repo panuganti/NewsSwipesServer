@@ -12,6 +12,13 @@ namespace DataContracts.Client
         public string Email { get; set; }
         [DataMember]
         public string Language { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string ProfileImage { get; set; }
+        [DataMember]
+        public bool CanPost { get; set; }
+
 
         public UserCredentialsIndexDoc ToUserIndexDoc()
         {
@@ -19,7 +26,10 @@ namespace DataContracts.Client
             {
                 Id = Id,
                 Email = Email,
-                Language = Language
+                Language = Language,
+                Name = Name,
+                ProfileImage = ProfileImage,
+                CanPost = CanPost
             };
         }
     }

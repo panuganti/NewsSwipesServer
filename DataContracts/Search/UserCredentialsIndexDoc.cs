@@ -32,6 +32,10 @@ namespace DataContracts.Search
         [JsonProperty(PropertyName = "canPost")]
         public bool CanPost { get; set; }
 
+        [DataMember]
+        [JsonProperty(PropertyName = "streams")]
+        public string[] Streams { get; set; }
+
         public UserCredentialsIndexDoc() { }
 
         public UserCredentialsIndexDoc(UserCredentials credentials)

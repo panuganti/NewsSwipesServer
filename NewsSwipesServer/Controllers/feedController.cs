@@ -28,7 +28,6 @@ namespace NewsSwipesServer.Controllers
         private FeedController(Datastore ds, FeedsIndex feedsIndex, Utils utils)
             :this(ds, feedsIndex, new Feeds(utils, new FeedsIndex()), utils)
         {
-
         } 
 
         private FeedController(Datastore ds, FeedsIndex feedsIndex, Feeds feeds, Utils utils)
@@ -44,7 +43,7 @@ namespace NewsSwipesServer.Controllers
         [Route("feed/getfeed")]
         public string[] GetFeed()
         {
-            return new[] { "value1", "value2" };
+            return new[] { "version 0.0.1", "value2" };
         }
         #endregion Test
 

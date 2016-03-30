@@ -14,7 +14,7 @@ namespace NewsSwipesServer.Controllers
     {
         private CredentialsIndex _credentialsIndex;
         
-        public UserController()
+        public UserController(): this (new CredentialsIndex())
         { }
 
         private UserController(CredentialsIndex credentialsIndex)
@@ -39,17 +39,24 @@ namespace NewsSwipesServer.Controllers
         [Route("user/ValidateCredentials")]
         public async Task<User> ValidateCredentials([FromBody]UserCredentials credentials)
         {
-            var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("email eq {0}", credentials.Email));
-            if (docs.Count == 1)
-            {
-                var storedCredentials = docs.Results.First().Document;
-                if (storedCredentials.Password == credentials.Password)
+            try {
+                var docs = await _credentialsIndex
+                    .Search<UserCredentialsIndexDoc>("*", String.Format("email eq '{0}'", credentials.Email.ToLower()));
+                if (docs.Count == 1)
                 {
-                    return storedCredentials.ToUser();
+                    var storedCredentials = docs.Results.First().Document;
+                    if (storedCredentials.Password == credentials.Password)
+                    {
+                        return storedCredentials.ToUser();
+                    }
+                    throw new Exception("Password Incorrect");
                 }
-                throw new Exception("Password Incorrect");
+                throw new Exception("None or Duplicate Users found");
             }
-            throw new Exception("None or Duplicate Users found");
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
 
         // POST api/values
