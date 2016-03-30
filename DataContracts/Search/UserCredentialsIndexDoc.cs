@@ -40,9 +40,9 @@ namespace DataContracts.Search
 
         public UserCredentialsIndexDoc(UserCredentials credentials)
         {
-            Id = credentials.Email; // TODO: Change to assigning a guid
-            Email = credentials.Email;
-            Password = credentials.Password;
+            Id = Guid.NewGuid().ToString(); // TODO: Change to assigning a guid
+            Email = credentials.Email.ToLower();
+            Password = credentials.Password.ToLower();
         }
 
         public User ToUser()
