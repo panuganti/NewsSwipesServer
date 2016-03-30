@@ -33,7 +33,6 @@ namespace DataContracts.Search
         [DataMember]
         public string[] LikedBy { get; set; }
 
-        // TODO: Add fields to Index
         [DataMember]
         public string[] Streams { get; set; }
 

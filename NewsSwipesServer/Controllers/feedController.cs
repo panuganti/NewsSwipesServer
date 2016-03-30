@@ -75,13 +75,13 @@ namespace NewsSwipesServer.Controllers
         #region Feed
         [HttpGet]
         [Route("feed/getfeed/{lang}/{skip}")]
-        public async Task<DocumentSearchResult<FeedsIndexDoc>> GetNewsFeed(string lang, int skip)
+        public async Task<IEnumerable<FeedsIndexDoc>> GetNewsFeed(string lang, int skip)
         {
             var sp = new SearchParameters() {
                 Filter = String.Format("lang eq {0}", lang)
             };
             var feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*",sp);
-            return feeds;
+            return feeds.Results.Select(t=> t.Document);
         }
 
         [HttpGet]
