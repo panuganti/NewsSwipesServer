@@ -59,9 +59,8 @@ namespace NewsSwipesLibrary
             _feedsIndex = feedsIndex;
         }
 
-        public IEnumerable<Feed> LoadFeeds(string lang)
+        public IEnumerable<Feed> LoadFeeds(string feedUrl)
         {
-            string feedUrl = GetNextFeedSource(lang);
             XDocument xDoc = XDocument.Load(feedUrl);
             var feeds = xDoc.Descendants("item")
                 .Select(
