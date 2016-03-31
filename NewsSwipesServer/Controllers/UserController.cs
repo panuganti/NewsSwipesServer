@@ -50,7 +50,8 @@ namespace NewsSwipesServer.Controllers
         public async Task<bool> CheckIfEmailExists(string email)
         {
             try {
-                var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("email eq '{0}'", email));
+                var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", 
+                                        String.Format("email eq '{0}'", email.ToLower()));
                 if (docs.Count != 0)
                 {
                     return true;
@@ -99,15 +100,15 @@ namespace NewsSwipesServer.Controllers
                     throw new Exception(string.Format("Email {0} already a user", credentials.Email));
                 }
                 // TODO: Check if password has min requirements
-                var uploadedDoc = await _credentialsIndex.UploadDocument(credentials.ToUserCredentialsIndexDoc(_config));
+                var indexDoc = credentials.ToUserCredentialsIndexDoc(_config);
+                var uploadedDoc = await _credentialsIndex.UploadDocument(indexDoc);
                 if (!uploadedDoc.Results.First().Succeeded)
                 {
-                    throw new Exception(string.Format("Sorry, could not sign you up. Please try again", credentials.Email));
+                    throw new Exception(string.Format("Sorry, could not sign you up. Please try again"));
                 }
 
                 // If Signup success
-                var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("email eq '{0}'", credentials.Email));
-                return docs.Results.First().Document.ToUser();
+                return indexDoc.ToUser();
             }
             catch(Exception e)
             {
