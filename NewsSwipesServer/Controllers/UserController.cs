@@ -6,6 +6,7 @@ using Search;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Web.Http.Cors;
+using NewsSwipesLibrary;
 
 namespace NewsSwipesServer.Controllers
 {
@@ -13,13 +14,15 @@ namespace NewsSwipesServer.Controllers
     public class UserController : Controller
     {
         private CredentialsIndex _credentialsIndex;
+        private Config _config;
         
-        public UserController(): this (new CredentialsIndex())
+        public UserController(): this (new CredentialsIndex(), new Config())
         { }
 
-        private UserController(CredentialsIndex credentialsIndex)
+        private UserController(CredentialsIndex credentialsIndex, Config config)
         {
             _credentialsIndex = credentialsIndex;
+            _config = config;
         }
 
         [HttpGet]
@@ -96,7 +99,7 @@ namespace NewsSwipesServer.Controllers
                     throw new Exception(string.Format("Email {0} already a user", credentials.Email));
                 }
                 // TODO: Check if password has min requirements
-                var uploadedDoc = await _credentialsIndex.UploadDocument(new UserCredentialsIndexDoc(credentials));
+                var uploadedDoc = await _credentialsIndex.UploadDocument(credentials.ToUserCredentialsIndexDoc(_config));
                 if (!uploadedDoc.Results.First().Succeeded)
                 {
                     throw new Exception(string.Format("Sorry, could not sign you up. Please try again", credentials.Email));

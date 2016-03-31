@@ -52,9 +52,15 @@ namespace NewsSwipesServer.Controllers
         [Route("feed/PostArticle")]
         public async Task<bool> PostArticle([FromBody] UnpublishedPost post)
         {
-            FeedsIndexDoc doc = post.ToFeedsIndexDoc();
-            var uploadedDoc = await _feedsIndex.UploadDocument(doc);
-            return uploadedDoc.Results.First().Succeeded;            
+            try {
+                FeedsIndexDoc doc = post.ToFeedsIndexDoc();
+                var uploadedDoc = await _feedsIndex.UploadDocument(doc);
+                return uploadedDoc.Results.First().Succeeded;
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
 
         [HttpPost]
@@ -66,7 +72,7 @@ namespace NewsSwipesServer.Controllers
 
         [HttpPost]
         [Route("feed/FetchFromFeedStream")]
-        public async Task<PostPreview> PreviewArticleFromFeed([FromBody] string feedStream)
+        public async Task<PostPreview> FetchFromFeedStream([FromBody] string feedStream)
         {
             return await _feeds.LoadNextFeed(feedStream);
         }
@@ -74,27 +80,46 @@ namespace NewsSwipesServer.Controllers
 
         #region Feed
         [HttpGet]
-        [Route("feed/getfeed/{lang}/{skip}")]
-        public async Task<IEnumerable<FeedsIndexDoc>> GetNewsFeed(string lang, int skip)
+        [Route("feed/getfeed/{streams}/{skip}")]
+        public async Task<IEnumerable<PublishedPost>> GetNewsFeed(string streams, int skip)
         {
-            var sp = new SearchParameters() {
-                Filter = String.Format("lang eq {0}", lang)
-            };
-            var feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*",sp);
-            return feeds.Results.Select(t=> t.Document);
+            string[] streamArray = streams.Split(',');
+            List<PublishedPost> newsFeed = new List<PublishedPost>();
+            try
+            {
+                foreach (var stream in streamArray)
+                {
+                    var sp = new SearchParameters()
+                    {
+                        Filter = String.Format("streams/any(t: t eq '{0}')", stream),
+                        IncludeTotalResultCount = true
+                    };
+                    DocumentSearchResult<FeedsIndexDoc> feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
+                    newsFeed.AddRange(feeds.Results.Select(t => t.Document.ToPublishedPost()));
+                }
+                return newsFeed;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
         [HttpGet]
         [Route("feed/timeline/{userId}/{skip}")]
-        public async Task<DocumentSearchResult<FeedsIndexDoc>> GetTimeline(string userId, int skip)
+        public async Task<IEnumerable<PublishedPost>> GetTimeline(string userId, int skip)
         {
-            var sp = new SearchParameters()
-            {
-                Filter = string.Format("createdby eq {0}", userId),
-                OrderBy = new List<string> { "createddate" }
-            };
-            var feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
-            return feeds;
+            try {
+                var sp = new SearchParameters()
+                {
+                    Filter = string.Format("postedby eq '{0}'", userId),
+                    OrderBy = new List<string> { "createddate" }
+                };
+                var feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
+                return feeds.Results.Select(t=>t.Document.ToPublishedPost());
+            }
+            catch(Exception e)
+            { throw e; }
         }
 
         #endregion Feed

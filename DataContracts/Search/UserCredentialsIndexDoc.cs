@@ -35,24 +35,5 @@ namespace DataContracts.Search
         [DataMember]
         [JsonProperty(PropertyName = "streams")]
         public string[] Streams { get; set; }
-
-        public UserCredentialsIndexDoc() { }
-
-        public UserCredentialsIndexDoc(UserCredentials credentials)
-        {
-            Id = Guid.NewGuid().ToString(); // TODO: Change to assigning a guid
-            Email = credentials.Email.ToLower();
-            Password = credentials.Password.ToLower();
-        }
-
-        public User ToUser()
-        {
-            return new User
-            {
-                Id = Id,
-                Email = Email,
-                Language = Language
-            };
-        }
     }
 }

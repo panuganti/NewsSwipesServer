@@ -34,11 +34,15 @@ namespace DataContracts.Client
     }
 
     [DataContract]
-    public class UnpublishedPost : PostEntity
+    public class UnpublishedPost : PostableEntity
     {
         [DataMember]
         public ImageEntity Image { get; set; }
+    }
 
+    [DataContract]
+    public class PostableEntity: PostEntity
+    {
         [DataMember]
         public string[] Streams { get; set; }
 
@@ -50,24 +54,21 @@ namespace DataContracts.Client
 
         [DataMember]
         public string PostedBy { get; set; }
+    }
 
-        public FeedsIndexDoc ToFeedsIndexDoc()
-        {
-            var doc = new FeedsIndexDoc
-            {
-                Id = Guid.NewGuid().ToString(),
-                Title = Heading,
-                Text = Snippet,
-                CreatedTime = DateTime.UtcNow,
-                ImageUrl = Image.Url,
-                LandingPageUrl = OriginalLink,
-                CardStyle = CardStyle, // TODO:
-                PostedBy = PostedBy,
-                SharedBy = new string[] { },
-                LikedBy = new string[] { }
-            };
-            return doc;
-        }
+    [DataContract]
+    public class PublishedPost : PostableEntity
+    {
+        [DataMember]
+        public string Id { get; set; }
+        [DataMember]
+        public string ImageUrl { get; set; }
+        [DataMember]
+        public DateTime CreatedTime { get; set; }
+        [DataMember]
+        public string[] SharedBy { get; set; }
+        [DataMember]
+        public string[] LikedBy { get; set; }
     }
 
     [DataContract]

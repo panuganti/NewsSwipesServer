@@ -18,20 +18,8 @@ namespace DataContracts.Client
         public string ProfileImage { get; set; }
         [DataMember]
         public bool CanPost { get; set; }
-
-
-        public UserCredentialsIndexDoc ToUserIndexDoc()
-        {
-            return new UserCredentialsIndexDoc()
-            {
-                Id = Id,
-                Email = Email,
-                Language = Language,
-                Name = Name,
-                ProfileImage = ProfileImage,
-                CanPost = CanPost
-            };
-        }
+        [DataMember]
+        public string[] Streams { get; set; }
     }
 
     [DataContract]
@@ -50,6 +38,8 @@ namespace DataContracts.Client
         public string Email { get; set; }
         [DataMember]
         public string Password { get; set; }
+        [DataMember]
+        public string Language { get; set; }
     }
 
     [DataContract]

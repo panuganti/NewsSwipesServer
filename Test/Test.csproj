@@ -103,6 +103,10 @@
       <Project>{094265d5-6775-4ed9-b8f6-1de6e6668fad}</Project>
       <Name>GoogleDatastore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NewsSwipesLibrary\NewsSwipesLibrary.csproj">
+      <Project>{4d1e4366-0cc8-4af3-9ae4-17a7aff7ff52}</Project>
+      <Name>NewsSwipesLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Search\Search.csproj">
       <Project>{4ff865fa-91c6-4a73-a1ae-a89a8b8c3e11}</Project>
       <Name>Search</Name>
