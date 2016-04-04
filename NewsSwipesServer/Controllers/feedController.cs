@@ -96,11 +96,22 @@ namespace NewsSwipesServer.Controllers
             List<PublishedPost> newsFeed = new List<PublishedPost>();
             try
             {
+                bool first = true;
+                string filterString = "";
                 foreach (var stream in streamArray)
                 {
+                    if (first)
+                    {
+                        filterString = String.Format("streams/any(t: t eq '{0}')", stream);
+                    }
+                    else
+                    {
+                        filterString = String.Format("{0} or streams/any(t: t eq '{0}')", filterString, stream);
+                    }
+                }
                     var sp = new SearchParameters()
                     {
-                        Filter = String.Format("streams/any(t: t eq '{0}')", stream),
+                        Filter = filterString,
                         OrderBy = new List<string> { "createdtime desc" },
                         Top = 100,
                         Skip = skip,
@@ -108,7 +119,7 @@ namespace NewsSwipesServer.Controllers
                     };
                     DocumentSearchResult<FeedsIndexDoc> feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
                     newsFeed.AddRange(feeds.Results.Select(t => t.Document.ToPublishedPost()));
-                }
+                
                 return newsFeed;
             }
             catch (Exception e)

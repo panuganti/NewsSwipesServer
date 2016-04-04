@@ -33,21 +33,41 @@ namespace NewsSwipesLibrary
             _streams["english"].Add("english_politics");
             _streams["english"].Add("english_entertainment");
             _streams["english"].Add("english_sports");
+            _streams["english"].Add("english_international");
+            _streams["english"].Add("english_food");
+            _streams["english"].Add("english_fashion");
+            _streams["english"].Add("english_health");
+            _streams["english"].Add("english_economy");
             _streams["english"].Add("english_other");
 
             _streams["hindi"].Add("hindi_politics");
             _streams["hindi"].Add("hindi_entertainment");
             _streams["hindi"].Add("hindi_sports");
+            _streams["hindi"].Add("hindi_international");
+            _streams["hindi"].Add("hindi_food");
+            _streams["hindi"].Add("hindi_fashion");
+            _streams["hindi"].Add("hindi_health");
+            _streams["hindi"].Add("hindi_economy");
             _streams["hindi"].Add("hindi_other");
 
             _streams["marathi"].Add("marathi_politics");
             _streams["marathi"].Add("marathi_entertainment");
             _streams["marathi"].Add("marathi_sports");
+            _streams["marathi"].Add("marathi_international");
+            _streams["marathi"].Add("marathi_food");
+            _streams["marathi"].Add("marathi_fashion");
+            _streams["marathi"].Add("marathi_health");
+            _streams["marathi"].Add("marathi_economy");
             _streams["marathi"].Add("marathi_other");
 
             _streams["telugu"].Add("telugu_politics");
             _streams["telugu"].Add("telugu_entertainment");
             _streams["telugu"].Add("telugu_sports");
+            _streams["telugu"].Add("telugu_international");
+            _streams["telugu"].Add("telugu_food");
+            _streams["telugu"].Add("telugu_fashion");
+            _streams["telugu"].Add("telugu_health");
+            _streams["telugu"].Add("telugu_economy");
             _streams["telugu"].Add("telugu_other");
         }
         #endregion Streams
