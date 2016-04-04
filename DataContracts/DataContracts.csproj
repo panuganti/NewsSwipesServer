@@ -55,6 +55,7 @@
     <Compile Include="Search\FeedsIndexDoc.cs" />
     <Compile Include="Search\SearchDoc.cs" />
     <Compile Include="Search\ImagesIndexDoc.cs" />
+    <Compile Include="Search\SkippedUrlsIndexDoc.cs" />
     <Compile Include="Search\UserCredentialsIndexDoc.cs" />
     <Compile Include="Server\Feed.cs" />
   </ItemGroup>

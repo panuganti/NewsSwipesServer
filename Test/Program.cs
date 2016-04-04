@@ -21,7 +21,7 @@ namespace Test
             image.SourceUrl = "http://i.ndtvimg.com/i/2016-02/arun-jaitley-budget_650x400_51456737432.jpg";
             image.Tags = new string[] { "Jaitley" };
             image.Url = "https://storage.googleapis.com/www.archishainnovators.com/images/image.jpeg";
-            var imageIndex = new ImagesIndex();
+            var imageIndex = IndexFactory.ImagesIndex;
             imageIndex.UploadDocument(image).Wait();
         }
 
@@ -33,7 +33,7 @@ namespace Test
 
         static void TestNewFeed()
         {
-            var feeds = new Feeds(new Utils(), new FeedsIndex());
+            var feeds = new Feeds(new Utils(), IndexFactory.FeedsIndex, IndexFactory.SkippedUrlsIndex);
             var f = feeds.LoadFeeds("loksatta");
         }
 }

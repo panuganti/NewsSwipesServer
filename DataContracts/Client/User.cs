@@ -23,6 +23,33 @@ namespace DataContracts.Client
     }
 
     [DataContract]
+    public class UserDeviceInfo
+    {
+        [DataMember]
+        public string UserId { get; set; }
+        [DataMember]
+        public string JSON { get; set; }
+    }
+
+    [DataContract]
+    public class UserContactsInfo
+    {
+        [DataMember]
+        public string UserId { get; set; }
+        [DataMember]
+        public string JSON { get; set; }
+    }
+
+    [DataContract]
+    public class UserGeoInfo
+    {
+        [DataMember]
+        public string UserId { get; set; }
+        [DataMember]
+        public string JSON { get; set; }
+    }
+
+    [DataContract]
     public class UserNotification
     {
         [DataMember]
@@ -66,9 +93,11 @@ namespace DataContracts.Client
     public class UserReaction
     {
         [DataMember]
+        public string ArticleId { get; set; }
+        [DataMember]
         public string UserId { get; set; }
         [DataMember]
-        public ReactionType ReactionType { get; set; }
+        public string ReactionType { get; set; }
     }
 
     [DataContract]

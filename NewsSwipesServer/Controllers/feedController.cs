@@ -16,24 +16,26 @@ namespace NewsSwipesServer.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class FeedController : Controller
     {
-        FeedsIndex _feedsIndex;
+        SearchIndex _feedsIndex;
+        SearchIndex _skippedUrlsIndex;
         Datastore _ds;
         Utils _utils;
         Feeds _feeds;
 
-        public FeedController() : this(new Datastore(), new FeedsIndex(), new Utils())
+        public FeedController() : this(new Datastore(), IndexFactory.FeedsIndex, IndexFactory.SkippedUrlsIndex, new Utils())
         {
         }
 
-        private FeedController(Datastore ds, FeedsIndex feedsIndex, Utils utils)
-            :this(ds, feedsIndex, new Feeds(utils, new FeedsIndex()), utils)
+        private FeedController(Datastore ds, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex, Utils utils)
+            :this(ds, feedsIndex, skippedUrlsIndex, new Feeds(utils, feedsIndex, skippedUrlsIndex), utils)
         {
         } 
 
-        private FeedController(Datastore ds, FeedsIndex feedsIndex, Feeds feeds, Utils utils)
+        private FeedController(Datastore ds, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex, Feeds feeds, Utils utils)
         {
             _ds = ds;
             _feedsIndex = feedsIndex;
+            _skippedUrlsIndex = skippedUrlsIndex;
             _feeds = feeds;
             _utils = utils;
         }
@@ -52,9 +54,16 @@ namespace NewsSwipesServer.Controllers
         [Route("feed/PostArticle")]
         public async Task<bool> PostArticle([FromBody] UnpublishedPost post)
         {
+            DocumentIndexResult uploadedDoc;
             try {
+                if (post.ShouldSkip)
+                {
+                    SkippedUrlsIndexDoc skippedDoc = post.ToSkippedUrlsIndexDoc();
+                    uploadedDoc = await _skippedUrlsIndex.UploadDocument(skippedDoc);
+                    return uploadedDoc.Results.First().Succeeded;
+                }
                 FeedsIndexDoc doc = post.ToFeedsIndexDoc();
-                var uploadedDoc = await _feedsIndex.UploadDocument(doc);
+                uploadedDoc = await _feedsIndex.UploadDocument(doc);
                 return uploadedDoc.Results.First().Succeeded;
             }
             catch(Exception e)
@@ -92,6 +101,9 @@ namespace NewsSwipesServer.Controllers
                     var sp = new SearchParameters()
                     {
                         Filter = String.Format("streams/any(t: t eq '{0}')", stream),
+                        OrderBy = new List<string> { "createdtime desc" },
+                        Top = 100,
+                        Skip = skip,
                         IncludeTotalResultCount = true
                     };
                     DocumentSearchResult<FeedsIndexDoc> feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
@@ -127,9 +139,27 @@ namespace NewsSwipesServer.Controllers
         #region UserAction
         [HttpPost]
         [Route("feed/AddUserReaction")]
-        public bool AddUserReaction([FromBody]UserReaction reaction)
+        public async Task<string[]> AddUserReaction([FromBody]UserReaction reaction)
         {
-            throw new NotImplementedException();
+            var doc = await _feedsIndex.LookupDocument<FeedsIndexDoc>(reaction.ArticleId);
+            var likedby = doc.LikedBy.ToList();
+            var sharedby = doc.SharedBy.ToList();
+            bool likeOrShare = true;
+            switch (reaction.ReactionType)
+            {
+                case "Like":
+                    likedby.Add(reaction.UserId); break;
+                case "UnLike":
+                    likedby.Remove(reaction.UserId); break;
+                case "ReTweet":
+                    sharedby.Add(reaction.UserId); likeOrShare = false;  break;
+                case "UnReTweet":
+                    sharedby.Remove(reaction.UserId); likeOrShare = false; break;
+                default: throw new Exception("Unknown Reaction Type");
+            }
+            reaction.ToFeedIndexDoc(likedby.ToArray(), sharedby.ToArray());
+            if (likeOrShare) { return likedby.ToArray(); }
+            else { return sharedby.ToArray(); }
         }
 
         #endregion UserAction

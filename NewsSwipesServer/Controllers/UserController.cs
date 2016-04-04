@@ -13,15 +13,17 @@ namespace NewsSwipesServer.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class UserController : Controller
     {
-        private CredentialsIndex _credentialsIndex;
+        private SearchIndex _credentialsIndex;
+        private SearchIndex _storageIndex;
         private Config _config;
-        
-        public UserController(): this (new CredentialsIndex(), new Config())
+
+        public UserController() : this(IndexFactory.CredentialsIndex, IndexFactory.StorageIndex, new Config())
         { }
 
-        private UserController(CredentialsIndex credentialsIndex, Config config)
+        private UserController(SearchIndex credentialsIndex, SearchIndex storageIndex, Config config)
         {
             _credentialsIndex = credentialsIndex;
+            _storageIndex = storageIndex;
             _config = config;
         }
 
@@ -49,8 +51,9 @@ namespace NewsSwipesServer.Controllers
         [Route("user/CheckIfEmailExists")]
         public async Task<bool> CheckIfEmailExists(string email)
         {
-            try {
-                var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", 
+            try
+            {
+                var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*",
                                         String.Format("email eq '{0}'", email.ToLower()));
                 if (docs.Count != 0)
                 {
@@ -58,7 +61,7 @@ namespace NewsSwipesServer.Controllers
                 }
                 return false;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -68,7 +71,8 @@ namespace NewsSwipesServer.Controllers
         [Route("user/ValidateCredentials")]
         public async Task<User> ValidateCredentials([FromBody]UserCredentials credentials)
         {
-            try {
+            try
+            {
                 var docs = await _credentialsIndex
                     .Search<UserCredentialsIndexDoc>("*", String.Format("email eq '{0}'", credentials.Email.ToLower()));
                 if (docs.Count == 1)
@@ -82,7 +86,7 @@ namespace NewsSwipesServer.Controllers
                 }
                 throw new Exception("None or Duplicate Users found");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -93,7 +97,8 @@ namespace NewsSwipesServer.Controllers
         [Route("user/SignUp")]
         public async Task<User> SignUp([FromBody]UserCredentials credentials)
         {
-            try {
+            try
+            {
                 bool isAlreadySignedUp = await CheckIfEmailExists(credentials.Email);
                 if (isAlreadySignedUp)
                 {
@@ -110,7 +115,7 @@ namespace NewsSwipesServer.Controllers
                 // If Signup success
                 return indexDoc.ToUser();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -122,6 +127,32 @@ namespace NewsSwipesServer.Controllers
         public async Task<bool> UpdateUserProfile([FromBody]User user)
         {
             var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
+            return uploadedDoc.Results.First().Succeeded;
+        }
+
+
+
+        [HttpPost]
+        [Route("user/UpdateUserDeviceInfo")]
+        public async Task<bool> UpdateUserDeviceInfo([FromBody]UserDeviceInfo deviceInfo)
+        {
+            var uploadedDoc = await _storageIndex.UpdateDocument(deviceInfo.ToStorageIndexDoc());
+            return uploadedDoc.Results.First().Succeeded;
+        }
+
+        [HttpPost]
+        [Route("user/UpdateUserGeoInfo")]
+        public async Task<bool> UpdateUserGeoInfo([FromBody]UserGeoInfo geoInfo)
+        {
+            var uploadedDoc = await _storageIndex.UpdateDocument(geoInfo.ToStorageIndexDoc());
+            return uploadedDoc.Results.First().Succeeded;
+        }
+
+        [HttpPost]
+        [Route("user/UpdateUserContactList")]
+        public async Task<bool> UpdateUserContactList([FromBody]UserContactsInfo contactsInfo)
+        {
+            var uploadedDoc = await _storageIndex.UpdateDocument(contactsInfo.ToStorageIndexDoc());
             return uploadedDoc.Results.First().Succeeded;
         }
     }

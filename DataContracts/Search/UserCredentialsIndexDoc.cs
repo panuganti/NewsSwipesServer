@@ -36,4 +36,20 @@ namespace DataContracts.Search
         [JsonProperty(PropertyName = "streams")]
         public string[] Streams { get; set; }
     }
+
+    [DataContract]
+    public class StorageIndexDoc: SearchDoc
+    {
+        [DataMember]
+        [JsonProperty(PropertyName = "deviceinfo")]
+        public string DeviceInfo { get; set; }
+
+        [DataMember]
+        [JsonProperty(PropertyName = "geoinfo")]
+        public string GeoInfo { get; set; }
+
+        [DataMember]
+        [JsonProperty(PropertyName = "contactinfo")]
+        public string ContactInfo { get; set; }
+    }
 }

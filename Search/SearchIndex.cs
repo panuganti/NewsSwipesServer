@@ -13,7 +13,7 @@ namespace Search
         SearchIndexClient _indexClient;
 
         // ext-service newsswipesprod, FCCE9E142A7AD2BC492E1C9DB9F650FA
-        protected SearchIndex(string indexName, string serviceName, string key)
+        public SearchIndex(string indexName, string serviceName, string key)
             : this( new SearchServiceClient(serviceName, new SearchCredentials(key))
                   .Indexes.GetClient(indexName))
         {

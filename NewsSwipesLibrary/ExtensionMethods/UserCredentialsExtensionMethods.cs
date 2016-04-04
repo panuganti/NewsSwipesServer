@@ -35,6 +35,33 @@ namespace NewsSwipesLibrary
             };
         }
 
+        public static StorageIndexDoc ToStorageIndexDoc(this UserDeviceInfo deviceInfo)
+        {
+            return new StorageIndexDoc()
+            {
+                DeviceInfo = deviceInfo.JSON,
+                Id = Guid.NewGuid().ToString()
+            };
+        }
+
+        public static StorageIndexDoc ToStorageIndexDoc(this UserGeoInfo geoInfo)
+        {
+            return new StorageIndexDoc()
+            {
+                GeoInfo = geoInfo.JSON,
+                Id = Guid.NewGuid().ToString()
+            };
+        }
+
+        public static StorageIndexDoc ToStorageIndexDoc(this UserContactsInfo contactsInfo)
+        {
+            return new StorageIndexDoc()
+            {
+                GeoInfo = contactsInfo.JSON,
+                Id = Guid.NewGuid().ToString()
+            };
+        }
+
         public static UserCredentialsIndexDoc ToUserIndexDoc(this User user)
         {
             return new UserCredentialsIndexDoc()
