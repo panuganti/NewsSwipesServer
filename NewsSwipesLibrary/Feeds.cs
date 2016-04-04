@@ -47,6 +47,8 @@ namespace NewsSwipesLibrary
         };
 
         private Dictionary<string, string> _telugufeeds = new Dictionary<string, string>() {
+            {"oneindia_telugunews", "http://telugu.oneindia.com/rss/telugu-news-fb.xml" },
+            {"oneindia_telugufeature", "http://telugu.oneindia.com/rss/telugu-feature-fb.xml" },
             {"cinejosh", "http://www.cinejosh.com/rss-feed/0/telugu.html" }
         };
 
