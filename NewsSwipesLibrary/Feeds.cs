@@ -64,7 +64,7 @@ namespace NewsSwipesLibrary
         public Task<Feed[]> LoadFeeds(string feedUrl)
         {
             XDocument xDoc = XDocument.Load(feedUrl);
-            var potentialFeeds = xDoc.Descendants("item").Take(10);
+            var potentialFeeds = xDoc.Descendants("item");
             var feeds = potentialFeeds
                 .Select(async 
                     t =>
