@@ -19,7 +19,8 @@ namespace NewsSwipesLibrary
                 Password = credentials.Password.ToLower(),
                 Language = credentials.Language.ToLower(),
                 CanPost = false,
-                Streams = config.GetStreams(credentials.Language.ToLower()).ToArray()
+                Streams = config.AllStreams.Where(s => s.Lang.ToLower() == credentials.Language.ToLower())
+                            .Select(s => String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())).ToArray()
             };
             return indexDoc;
         }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Web.Http.Cors;
 using NewsSwipesLibrary;
+using System.Collections.Generic;
 
 namespace NewsSwipesServer.Controllers
 {
@@ -130,8 +131,6 @@ namespace NewsSwipesServer.Controllers
             return uploadedDoc.Results.First().Succeeded;
         }
 
-
-
         [HttpPost]
         [Route("user/UpdateUserDeviceInfo")]
         public async Task<bool> UpdateUserDeviceInfo([FromBody]UserDeviceInfo deviceInfo)
@@ -154,6 +153,25 @@ namespace NewsSwipesServer.Controllers
         {
             var uploadedDoc = await _storageIndex.UpdateDocument(contactsInfo.ToStorageIndexDoc());
             return uploadedDoc.Results.First().Succeeded;
+        }
+
+        [HttpGet]
+        [Route("user/GetStreams/{userId}")]
+        public async Task<IEnumerable<Stream>> GetStreams(string userId)
+        {
+            var streams = _config.AllStreams;
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            var userSelectStreams = new List<Stream>();
+            foreach(var stream in streams)
+            {
+                Stream s = stream;
+                if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))
+                {
+                    s.UserSelected = false;
+                }
+                userSelectStreams.Add(s);
+            }
+            return userSelectStreams;
         }
     }
 }
