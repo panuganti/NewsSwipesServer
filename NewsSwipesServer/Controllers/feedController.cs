@@ -103,10 +103,11 @@ namespace NewsSwipesServer.Controllers
                     if (first)
                     {
                         filterString = String.Format("streams/any(t: t eq '{0}')", stream);
+                        first = false;
                     }
                     else
                     {
-                        filterString = String.Format("{0} or streams/any(t: t eq '{0}')", filterString, stream);
+                        filterString = String.Format("{0} or streams/any(t: t eq '{1}')", filterString, stream);
                     }
                 }
                 var sp = new SearchParameters()
