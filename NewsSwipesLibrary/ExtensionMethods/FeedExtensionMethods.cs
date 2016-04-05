@@ -48,7 +48,7 @@ namespace NewsSwipesLibrary
                 Id = indexDoc.Id,
                 Heading = indexDoc.Title,
                 Snippet = indexDoc.Text,
-                CreatedTime = indexDoc.CreatedTime,
+                CreatedTime = indexDoc.CreatedTime.HasValue ? indexDoc.CreatedTime.Value : DateTime.UtcNow,
                 ImageUrl = indexDoc.ImageUrl,
                 OriginalLink = indexDoc.OriginalLink,
                 CardStyle = indexDoc.CardStyle,

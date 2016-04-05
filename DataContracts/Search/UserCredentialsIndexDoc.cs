@@ -9,31 +9,31 @@ namespace DataContracts.Search
     public class UserCredentialsIndexDoc : SearchDoc
     {
         [DataMember]
-        [JsonProperty(PropertyName = "email")]
+        [JsonProperty(PropertyName = "email", NullValueHandling = NullValueHandling.Ignore)]
         public string Email { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "password")]
+        [JsonProperty(PropertyName = "password", NullValueHandling = NullValueHandling.Ignore)]
         public string Password { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "language")]
+        [JsonProperty(PropertyName = "language", NullValueHandling = NullValueHandling.Ignore)]
         public string Language { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "name")]
+        [JsonProperty(PropertyName = "name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "profileImage")]
+        [JsonProperty(PropertyName = "profileImage", NullValueHandling = NullValueHandling.Ignore)]
         public string ProfileImage { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "canPost")]
+        [JsonProperty(PropertyName = "canPost", NullValueHandling = NullValueHandling.Ignore)]
         public bool CanPost { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "streams")]
+        [JsonProperty(PropertyName = "streams", NullValueHandling = NullValueHandling.Ignore)]
         public string[] Streams { get; set; }
     }
 
@@ -41,15 +41,15 @@ namespace DataContracts.Search
     public class StorageIndexDoc: SearchDoc
     {
         [DataMember]
-        [JsonProperty(PropertyName = "deviceinfo")]
+        [JsonProperty(PropertyName = "deviceinfo", NullValueHandling = NullValueHandling.Ignore)]
         public string DeviceInfo { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "geoinfo")]
+        [JsonProperty(PropertyName = "geoinfo", NullValueHandling = NullValueHandling.Ignore)]
         public string GeoInfo { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "contactinfo")]
+        [JsonProperty(PropertyName = "contactinfo", NullValueHandling = NullValueHandling.Ignore)]
         public string ContactInfo { get; set; }
     }
 }

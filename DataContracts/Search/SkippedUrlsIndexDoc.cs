@@ -8,11 +8,11 @@ namespace DataContracts.Search
     public class SkippedUrlsIndexDoc : SearchDoc
     {
         [DataMember]
-        [JsonProperty(PropertyName = "url")]
+        [JsonProperty(PropertyName = "url", NullValueHandling = NullValueHandling.Ignore)]
         public string Url { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "date")]
+        [JsonProperty(PropertyName = "date", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime Date { get; set; }
     }
 }

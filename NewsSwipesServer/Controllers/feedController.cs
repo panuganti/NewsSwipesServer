@@ -109,17 +109,17 @@ namespace NewsSwipesServer.Controllers
                         filterString = String.Format("{0} or streams/any(t: t eq '{0}')", filterString, stream);
                     }
                 }
-                    var sp = new SearchParameters()
-                    {
-                        Filter = filterString,
-                        OrderBy = new List<string> { "createdtime desc" },
-                        Top = 100,
-                        Skip = skip,
-                        IncludeTotalResultCount = true
-                    };
-                    DocumentSearchResult<FeedsIndexDoc> feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
-                    newsFeed.AddRange(feeds.Results.Select(t => t.Document.ToPublishedPost()));
-                
+                var sp = new SearchParameters()
+                {
+                    Filter = filterString,
+                    OrderBy = new List<string> { "createdtime desc" },
+                    Top = 100,
+                    Skip = skip,
+                    IncludeTotalResultCount = true
+                };
+                DocumentSearchResult<FeedsIndexDoc> feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
+                newsFeed.AddRange(feeds.Results.Select(t => t.Document.ToPublishedPost()));
+
                 return newsFeed;
             }
             catch (Exception e)
@@ -152,25 +152,36 @@ namespace NewsSwipesServer.Controllers
         [Route("feed/AddUserReaction")]
         public async Task<string[]> AddUserReaction([FromBody]UserReaction reaction)
         {
-            var doc = await _feedsIndex.LookupDocument<FeedsIndexDoc>(reaction.ArticleId);
-            var likedby = doc.LikedBy.ToList();
-            var sharedby = doc.SharedBy.ToList();
-            bool likeOrShare = true;
-            switch (reaction.ReactionType)
-            {
-                case "Like":
-                    likedby.Add(reaction.UserId); break;
-                case "UnLike":
-                    likedby.Remove(reaction.UserId); break;
-                case "ReTweet":
-                    sharedby.Add(reaction.UserId); likeOrShare = false;  break;
-                case "UnReTweet":
-                    sharedby.Remove(reaction.UserId); likeOrShare = false; break;
-                default: throw new Exception("Unknown Reaction Type");
+            try {
+                var doc = await _feedsIndex.LookupDocument<FeedsIndexDoc>(reaction.ArticleId);
+                var likedby = doc.LikedBy.ToList();
+                var sharedby = doc.SharedBy.ToList();
+                bool likeOrShare = true;
+                switch (reaction.ReactionType)
+                {
+                    case "Like":
+                        likedby.Add(reaction.UserId); break;
+                    case "UnLike":
+                        likedby.Remove(reaction.UserId); break;
+                    case "ReTweet":
+                        sharedby.Add(reaction.UserId); likeOrShare = false; break;
+                    case "UnReTweet":
+                        sharedby.Remove(reaction.UserId); likeOrShare = false; break;
+                    default: throw new Exception("Unknown Reaction Type");
+                }
+                var indexDoc = reaction.ToFeedIndexDoc(likedby.ToArray(), sharedby.ToArray());
+                var uploadedDoc = await _feedsIndex.UploadDocument(indexDoc);
+                if (uploadedDoc.Results.First().Succeeded)
+                {
+                    if (likeOrShare) { return likedby.ToArray(); }
+                    else { return sharedby.ToArray(); }
+                }
+                throw new Exception("Could not apply User Reaction");
             }
-            reaction.ToFeedIndexDoc(likedby.ToArray(), sharedby.ToArray());
-            if (likeOrShare) { return likedby.ToArray(); }
-            else { return sharedby.ToArray(); }
+            catch(Exception e)
+            {
+                throw new Exception("Could not apply User Reaction");
+            }
         }
 
         #endregion UserAction
