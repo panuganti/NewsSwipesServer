@@ -40,7 +40,7 @@ namespace GoogleDatastore
             }
         }
 
-        public async Task Upload(string filename, string imageUrl)
+        public async Task<bool> UploadAsync(string filename, string imageUrl)
         {
             IConfigurableHttpClientInitializer credentials = GetApplicationDefaultCredentials();
             StorageService service = new StorageService( 
@@ -68,6 +68,7 @@ namespace GoogleDatastore
                     byte[] data = webClient.DownloadData(imageUrl);
                     MemoryStream mem = new MemoryStream(data);
                     await service.Objects.Insert(fileobj, bucketName, mem, "image/jpeg").UploadAsync();
+                    return true;
                     //var insmedia = new ObjectsResource.InsertMediaUpload(service, fileobj, bucketName, mem, "image/jpeg");
                     //await insmedia.UploadAsync();
                 }

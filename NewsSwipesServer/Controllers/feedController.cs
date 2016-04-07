@@ -18,24 +18,30 @@ namespace NewsSwipesServer.Controllers
     {
         SearchIndex _feedsIndex;
         SearchIndex _skippedUrlsIndex;
+        SearchIndex _imagesIndex;
+
         Datastore _ds;
         Utils _utils;
         Feeds _feeds;
 
-        public FeedController() : this(new Datastore(), IndexFactory.FeedsIndex, IndexFactory.SkippedUrlsIndex, new Utils())
+        public FeedController() : this(new Datastore(), IndexFactory.FeedsIndex, 
+                IndexFactory.SkippedUrlsIndex, IndexFactory.ImagesIndex,  new Utils())
         {
         }
 
-        private FeedController(Datastore ds, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex, Utils utils)
-            :this(ds, feedsIndex, skippedUrlsIndex, new Feeds(utils, feedsIndex, skippedUrlsIndex), utils)
+        private FeedController(Datastore ds, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex, 
+                                                                SearchIndex imagesIndex, Utils utils)
+            :this(ds, feedsIndex, skippedUrlsIndex, imagesIndex, new Feeds(utils, feedsIndex, skippedUrlsIndex), utils)
         {
         } 
 
-        private FeedController(Datastore ds, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex, Feeds feeds, Utils utils)
+        private FeedController(Datastore ds, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex, SearchIndex imagesIndex, 
+            Feeds feeds, Utils utils)
         {
             _ds = ds;
             _feedsIndex = feedsIndex;
             _skippedUrlsIndex = skippedUrlsIndex;
+            _imagesIndex = imagesIndex;
             _feeds = feeds;
             _utils = utils;
         }
@@ -62,9 +68,28 @@ namespace NewsSwipesServer.Controllers
                     uploadedDoc = await _skippedUrlsIndex.UploadDocument(skippedDoc);
                     return uploadedDoc.Results.First().Succeeded;
                 }
+                
                 FeedsIndexDoc doc = post.ToFeedsIndexDoc();
+
+                // Upload image to local resource
+                var filename = string.Format("{0}.jpeg", doc.Id);
+                var uploadSucc = await _ds.UploadAsync(filename, doc.ImageUrl);
+
+                // If tagged, upload to image db
+                bool imageUploaded = true;
+                var uploadedUrl = string.Format("https://storage.googleapis.com/www.archishainnovators.com/images/{0}", filename);
+                if (post.Image.Tags.Any())
+                {
+                    ImagesIndexDoc imageDoc = new ImagesIndexDoc { Id = doc.Id, DateAdded = DateTime.Now, SourceUrl = doc.ImageUrl,
+                                        Url = uploadedUrl, Tags = post.Image.Tags};
+                    var uploadResult = await _imagesIndex.UploadDocument(imageDoc);
+                    imageUploaded = uploadResult.Results.First().Succeeded;
+                }
+                doc.ImageUrl = uploadedUrl;
+
+                // Upload post
                 uploadedDoc = await _feedsIndex.UploadDocument(doc);
-                return uploadedDoc.Results.First().Succeeded;
+                return uploadedDoc.Results.First().Succeeded && imageUploaded;
             }
             catch(Exception e)
             {
@@ -197,34 +222,5 @@ public bool UploadImageFromUrl([FromBody]UploadObject uploadObj)
 }
 */
 
-
-        /*
-        [HttpGet]
-        public int AddLike(string request)
-        {
-            // UserId, articleId
-            return 0;
-        }
-
-        [HttpGet]
-        public int RemoveLike(string request)
-        {
-            // UserId, articleId
-            return 0;
-        }
-
-        [HttpGet]
-        public int Retweet(string request)
-        {
-            // UserId, articleId
-            return 0;
-        }
-
-        // POST api/feed
-        [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
-        */
     }
 }
