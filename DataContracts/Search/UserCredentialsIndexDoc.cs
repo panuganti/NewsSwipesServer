@@ -51,5 +51,9 @@ namespace DataContracts.Search
         [DataMember]
         [JsonProperty(PropertyName = "contactinfo", NullValueHandling = NullValueHandling.Ignore)]
         public string ContactInfo { get; set; }
+
+        [DataMember]
+        [JsonProperty(PropertyName = "contactemails", NullValueHandling = NullValueHandling.Ignore)]
+        public string[] ContactEmails { get; set; }
     }
 }

@@ -173,5 +173,48 @@ namespace NewsSwipesServer.Controllers
             }
             return userSelectStreams;
         }
+
+        #region Contacts
+        [HttpGet]
+        [Route("user/FetchContacts/{userId}")]
+        public async Task<IEnumerable<UserContact>> FetchContacts(string userId)
+        {
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+           
+        }
+
+        [HttpPost]
+        [Route("user/UpdateContacts/{userId}")]
+        public async Task<bool> UpdateContacts([FromBody]IEnumerable<UserContact> userContacts, string userId)
+        {
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>("");
+            throw new NotImplementedException();
+        }
+
+        [HttpPost]
+        [Route("user/UpdateContact")]
+        public async Task<bool> UpdateContact([FromBody]UserContact userContact)
+        {
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            throw new NotImplementedException();
+        }
+
+        [HttpPost]
+        [Route("user/DeleteContact")]
+        public async Task<bool> DeleteContact([FromBody]UserContact userContact)
+        {
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            throw new NotImplementedException();
+        }
+
+        [HttpPost]
+        [Route("user/UnFollowContact")]
+        public async Task<bool> UnFollowContact([FromBody]UserContact userContact)
+        {
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            throw new NotImplementedException();
+        }
+
+        #endregion Contacts
     }
 }

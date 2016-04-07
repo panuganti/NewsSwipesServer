@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DataContracts.Search;
 using DataContracts.Client;
+using Newtonsoft.Json;
 
 namespace NewsSwipesLibrary
 {
@@ -58,8 +59,9 @@ namespace NewsSwipesLibrary
         {
             return new StorageIndexDoc()
             {
-                GeoInfo = contactsInfo.JSON,
-                Id = Guid.NewGuid().ToString()
+                ContactInfo = JsonConvert.SerializeObject(contactsInfo.Contacts),
+                ContactEmails = contactsInfo.Contacts.SelectMany(x=> x.Emails.Select(y => y.Value)).Where(z => z!= null && z!= string.Empty).ToArray(),
+                Id = contactsInfo.UserId == null ? Guid.NewGuid().ToString() : contactsInfo.UserId
             };
         }
 
