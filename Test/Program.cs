@@ -29,7 +29,7 @@ namespace Test
         static void TestDatastoreUpload()
         {
             var ss = new Datastore();
-            ss.Upload("image.jpeg", "http://i.ndtvimg.com/i/2016-02/arun-jaitley-budget_650x400_51456737432.jpg").Wait();
+            ss.UploadImageAsync("image.jpeg", "http://i.ndtvimg.com/i/2016-02/arun-jaitley-budget_650x400_51456737432.jpg").Wait();
         }
 
         static async Task TestNewFeed()

@@ -33,13 +33,5 @@
                 return new SearchIndex("skippedurls", "newsswipesprod", "FCCE9E142A7AD2BC492E1C9DB9F650FA");
             }
         }
-
-        public static SearchIndex StorageIndex
-        {
-            get
-            {
-                return new SearchIndex("storageindex", "newsswipesprod", "FCCE9E142A7AD2BC492E1C9DB9F650FA");
-            }
-        }
     }
 }

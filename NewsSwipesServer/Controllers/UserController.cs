@@ -8,6 +8,8 @@ using System.Linq;
 using System.Web.Http.Cors;
 using NewsSwipesLibrary;
 using System.Collections.Generic;
+using GoogleDatastore;
+using Newtonsoft.Json;
 
 namespace NewsSwipesServer.Controllers
 {
@@ -15,17 +17,17 @@ namespace NewsSwipesServer.Controllers
     public class UserController : Controller
     {
         private SearchIndex _credentialsIndex;
-        private SearchIndex _storageIndex;
         private Config _config;
+        private Datastore _ds; 
 
-        public UserController() : this(IndexFactory.CredentialsIndex, IndexFactory.StorageIndex, new Config())
+        public UserController() : this(IndexFactory.CredentialsIndex, new Config(), new Datastore())
         { }
 
-        private UserController(SearchIndex credentialsIndex, SearchIndex storageIndex, Config config)
+        private UserController(SearchIndex credentialsIndex, Config config, Datastore ds)
         {
             _credentialsIndex = credentialsIndex;
-            _storageIndex = storageIndex;
             _config = config;
+            _ds = ds;
         }
 
         [HttpGet]
@@ -135,24 +137,21 @@ namespace NewsSwipesServer.Controllers
         [Route("user/UpdateUserDeviceInfo")]
         public async Task<bool> UpdateUserDeviceInfo([FromBody]UserDeviceInfo deviceInfo)
         {
-            var uploadedDoc = await _storageIndex.UpdateDocument(deviceInfo.ToStorageIndexDoc());
-            return uploadedDoc.Results.First().Succeeded;
+            return await _ds.UploadStorageInfoAsync(Guid.NewGuid().ToString(), JsonConvert.SerializeObject(deviceInfo));
         }
 
         [HttpPost]
         [Route("user/UpdateUserGeoInfo")]
         public async Task<bool> UpdateUserGeoInfo([FromBody]UserGeoInfo geoInfo)
         {
-            var uploadedDoc = await _storageIndex.UpdateDocument(geoInfo.ToStorageIndexDoc());
-            return uploadedDoc.Results.First().Succeeded;
+            return await _ds.UploadStorageInfoAsync(Guid.NewGuid().ToString(), JsonConvert.SerializeObject(geoInfo));
         }
 
         [HttpPost]
         [Route("user/UpdateUserContactList")]
         public async Task<bool> UpdateUserContactList([FromBody]UserContactsInfo contactsInfo)
         {
-            var uploadedDoc = await _storageIndex.UpdateDocument(contactsInfo.ToStorageIndexDoc());
-            return uploadedDoc.Results.First().Succeeded;
+            return await _ds.UploadStorageInfoAsync(Guid.NewGuid().ToString(), JsonConvert.SerializeObject(contactsInfo));
         }
 
         [HttpGet]
@@ -180,7 +179,7 @@ namespace NewsSwipesServer.Controllers
         public async Task<IEnumerable<UserContact>> FetchContacts(string userId)
         {
             var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-           
+            throw new NotImplementedException();
         }
 
         [HttpPost]
@@ -192,24 +191,24 @@ namespace NewsSwipesServer.Controllers
         }
 
         [HttpPost]
-        [Route("user/UpdateContact")]
-        public async Task<bool> UpdateContact([FromBody]UserContact userContact)
+        [Route("user/UpdateContact/{userId}")]
+        public async Task<bool> UpdateContact([FromBody]UserContact userContact, string userId)
         {
             var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
             throw new NotImplementedException();
         }
 
         [HttpPost]
-        [Route("user/DeleteContact")]
-        public async Task<bool> DeleteContact([FromBody]UserContact userContact)
+        [Route("user/DeleteContact/{userId}")]
+        public async Task<bool> DeleteContact([FromBody]UserContact userContact, string userId)
         {
             var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
             throw new NotImplementedException();
         }
 
         [HttpPost]
-        [Route("user/UnFollowContact")]
-        public async Task<bool> UnFollowContact([FromBody]UserContact userContact)
+        [Route("user/UnFollowContact/{userId}")]
+        public async Task<bool> UnFollowContact([FromBody]UserContact userContact, string userId)
         {
             var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
             throw new NotImplementedException();

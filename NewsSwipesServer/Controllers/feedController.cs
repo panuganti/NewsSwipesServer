@@ -73,7 +73,7 @@ namespace NewsSwipesServer.Controllers
 
                 // Upload image to local resource
                 var filename = string.Format("{0}.jpeg", doc.Id);
-                var uploadSucc = await _ds.UploadAsync(filename, doc.ImageUrl);
+                var uploadSucc = await _ds.UploadImageAsync(filename, doc.ImageUrl);
 
                 // If tagged, upload to image db
                 bool imageUploaded = true;

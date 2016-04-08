@@ -37,34 +37,6 @@ namespace NewsSwipesLibrary
             };
         }
 
-        public static StorageIndexDoc ToStorageIndexDoc(this UserDeviceInfo deviceInfo)
-        {
-            return new StorageIndexDoc()
-            {
-                DeviceInfo = deviceInfo.JSON,
-                Id = Guid.NewGuid().ToString()
-            };
-        }
-
-        public static StorageIndexDoc ToStorageIndexDoc(this UserGeoInfo geoInfo)
-        {
-            return new StorageIndexDoc()
-            {
-                GeoInfo = geoInfo.JSON,
-                Id = Guid.NewGuid().ToString()
-            };
-        }
-
-        public static StorageIndexDoc ToStorageIndexDoc(this UserContactsInfo contactsInfo)
-        {
-            return new StorageIndexDoc()
-            {
-                ContactInfo = JsonConvert.SerializeObject(contactsInfo.Contacts),
-                ContactEmails = contactsInfo.Contacts.SelectMany(x=> x.Emails.Select(y => y.Value)).Where(z => z!= null && z!= string.Empty).ToArray(),
-                Id = contactsInfo.UserId == null ? Guid.NewGuid().ToString() : contactsInfo.UserId
-            };
-        }
-
         public static UserCredentialsIndexDoc ToUserIndexDoc(this User user)
         {
             return new UserCredentialsIndexDoc()

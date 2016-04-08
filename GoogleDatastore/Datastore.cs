@@ -40,10 +40,39 @@ namespace GoogleDatastore
             }
         }
 
-        public async Task<bool> UploadAsync(string filename, string imageUrl)
+        public async Task<bool> UploadImageAsync(string filename, string imageUrl)
+        {
+            using (WebClient webClient = new WebClient())
+            {
+                try
+                {
+                    byte[] data = webClient.DownloadData(imageUrl);
+                    MemoryStream mem = new MemoryStream(data);
+                    return await UploadAsync(filename, mem, "image/jpeg", "images");
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
+        }
+
+        public async Task<bool> UploadStorageInfoAsync(string filename, string data)
+        {
+            MemoryStream mem = new MemoryStream();
+            using (StreamWriter writer = new StreamWriter(mem))
+            {
+                writer.Write(data);
+                writer.Flush();
+                mem.Position = 0;
+                return await UploadAsync(filename, mem, "text/plain", "storage");
+            }
+        }
+
+        public async Task<bool> UploadAsync(string filename, MemoryStream mem, string datatype, string dirName)
         {
             IConfigurableHttpClientInitializer credentials = GetApplicationDefaultCredentials();
-            StorageService service = new StorageService( 
+            StorageService service = new StorageService(
                 new BaseClientService.Initializer()
                 {
                     HttpClientInitializer = credentials,
@@ -60,23 +89,10 @@ namespace GoogleDatastore
                     }
                 };
 
-            filename = "images/" + filename;
-            var fileobj = new Google.Apis.Storage.v1.Data.Object() {Name = filename, Acl = acl };
-            using (WebClient webClient = new WebClient())
-            {
-                try {
-                    byte[] data = webClient.DownloadData(imageUrl);
-                    MemoryStream mem = new MemoryStream(data);
-                    await service.Objects.Insert(fileobj, bucketName, mem, "image/jpeg").UploadAsync();
-                    return true;
-                    //var insmedia = new ObjectsResource.InsertMediaUpload(service, fileobj, bucketName, mem, "image/jpeg");
-                    //await insmedia.UploadAsync();
-                }
-                catch(Exception e)
-                {
-                    throw e;
-                }
-            }
+            filename = String.Format("{0}/{1}", dirName, filename);
+            var fileobj = new Google.Apis.Storage.v1.Data.Object() { Name = filename, Acl = acl };
+            await service.Objects.Insert(fileobj, bucketName, mem, datatype).UploadAsync();
+            return true;
         }
     }
 }
