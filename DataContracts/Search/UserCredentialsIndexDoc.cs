@@ -1,7 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
-using DataContracts.Client;
 
 namespace DataContracts.Search
 {
@@ -35,25 +34,25 @@ namespace DataContracts.Search
         [DataMember]
         [JsonProperty(PropertyName = "streams", NullValueHandling = NullValueHandling.Ignore)]
         public string[] Streams { get; set; }
-    }
-
-    [DataContract]
-    public class StorageIndexDoc: SearchDoc
-    {
-        [DataMember]
-        [JsonProperty(PropertyName = "deviceinfo", NullValueHandling = NullValueHandling.Ignore)]
-        public string DeviceInfo { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "geoinfo", NullValueHandling = NullValueHandling.Ignore)]
-        public string GeoInfo { get; set; }
+        [JsonProperty(PropertyName = "innetworkemails", NullValueHandling = NullValueHandling.Ignore)]
+        public string[] InNetworkEmailContacts { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "contactinfo", NullValueHandling = NullValueHandling.Ignore)]
-        public string ContactInfo { get; set; }
+        [JsonProperty(PropertyName = "outofnetworkemails", NullValueHandling = NullValueHandling.Ignore)]
+        public string[] OutOfNetworkEmailContacts { get; set; }
 
         [DataMember]
-        [JsonProperty(PropertyName = "contactemails", NullValueHandling = NullValueHandling.Ignore)]
-        public string[] ContactEmails { get; set; }
+        [JsonProperty(PropertyName = "innetworkphonenos", NullValueHandling = NullValueHandling.Ignore)]
+        public string[] InNetworkPhoneNos { get; set; }
+
+        [DataMember]
+        [JsonProperty(PropertyName = "outofnetworkphonenos", NullValueHandling = NullValueHandling.Ignore)]
+        public string[] OutOfNetworkPhoneNos { get; set; }
+
+        [DataMember]
+        [JsonProperty(PropertyName = "lastactivity", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? LastActivity { get; set; }
     }
 }

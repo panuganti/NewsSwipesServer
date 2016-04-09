@@ -133,26 +133,29 @@ namespace NewsSwipesServer.Controllers
             return uploadedDoc.Results.First().Succeeded;
         }
 
+        #region UserInfo
         [HttpPost]
         [Route("user/UpdateUserDeviceInfo")]
         public async Task<bool> UpdateUserDeviceInfo([FromBody]UserDeviceInfo deviceInfo)
         {
-            return await _ds.UploadStorageInfoAsync(Guid.NewGuid().ToString(), JsonConvert.SerializeObject(deviceInfo));
+            return await _ds.UploadStorageInfoAsync(
+                deviceInfo.UserId == null ? Guid.NewGuid().ToString() : deviceInfo.UserId, JsonConvert.SerializeObject(deviceInfo));
         }
 
         [HttpPost]
         [Route("user/UpdateUserGeoInfo")]
         public async Task<bool> UpdateUserGeoInfo([FromBody]UserGeoInfo geoInfo)
         {
-            return await _ds.UploadStorageInfoAsync(Guid.NewGuid().ToString(), JsonConvert.SerializeObject(geoInfo));
+            return await _ds.UploadStorageInfoAsync(geoInfo.UserId == null ? Guid.NewGuid().ToString() : geoInfo.UserId, JsonConvert.SerializeObject(geoInfo));
         }
 
         [HttpPost]
         [Route("user/UpdateUserContactList")]
         public async Task<bool> UpdateUserContactList([FromBody]UserContactsInfo contactsInfo)
         {
-            return await _ds.UploadStorageInfoAsync(Guid.NewGuid().ToString(), JsonConvert.SerializeObject(contactsInfo));
+            return await _ds.UploadStorageInfoAsync(contactsInfo.UserId == null ? Guid.NewGuid().ToString() : contactsInfo.UserId, JsonConvert.SerializeObject(contactsInfo));
         }
+        #endregion UserInfo
 
         [HttpGet]
         [Route("user/GetStreams/{userId}")]
@@ -162,6 +165,25 @@ namespace NewsSwipesServer.Controllers
             var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
             var userSelectStreams = new List<Stream>();
             foreach(var stream in streams)
+            {
+                Stream s = stream;
+                if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))
+                {
+                    s.UserSelected = false;
+                }
+                userSelectStreams.Add(s);
+            }
+            return userSelectStreams;
+        }
+
+        [HttpPost]
+        [Route("user/UpdateStreams/{userId}")]
+        public async Task<IEnumerable<Stream>> UpdateStreams(string userId, [FromBody] Stream[] updatedStreams)
+        {
+            var streams = _config.AllStreams;
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            var userSelectStreams = new List<Stream>();
+            foreach (var stream in streams)
             {
                 Stream s = stream;
                 if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))

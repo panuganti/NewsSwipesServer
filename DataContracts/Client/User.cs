@@ -20,7 +20,7 @@ namespace DataContracts.Client
         [DataMember]
         public bool CanPost { get; set; }
         [DataMember]
-        public string[] Streams { get; set; }
+        public Stream[] Streams { get; set; }
     }
 
     [DataContract]
@@ -47,6 +47,31 @@ namespace DataContracts.Client
         public string ProfileImg { get; set; }
         [DataMember]
         public bool IsFollowing { get; set; }
+    }
+
+    [DataContract]
+    public class UserNotification
+    {
+        [DataMember]
+        public int Badge { get; set; }
+
+        [DataMember]
+        public Notification[] Notifications { get; set; }
+    }
+
+    [DataContract]
+    public class Notification
+    {
+        [DataMember]
+        public int Priority { get; set; }
+        [DataMember]
+        public string Heading { get; set; }
+        [DataMember]
+        public string Text { get; set; }
+        [DataMember]
+        public DateTime DateTime { get; set; }
+        [DataMember]
+        public string Id { get; set; }
     }
 
 
@@ -177,15 +202,6 @@ namespace DataContracts.Client
         public string UserId { get; set; }
         [DataMember]
         public string JSON { get; set; }
-    }
-
-    [DataContract]
-    public class UserNotification
-    {
-        [DataMember]
-        public string Text { get; set; }
-        [DataMember]
-        public bool IsRead { get; set; }
     }
 
     [DataContract]

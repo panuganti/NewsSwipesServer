@@ -28,17 +28,25 @@ namespace NewsSwipesLibrary
 
         public static User ToUser(this UserCredentialsIndexDoc indexDoc)
         {
+            // TODO: Have seperate code for converters (other aspects of stream missing), lower/upper case is missing
+            Stream[] streams = indexDoc.Streams.Select(t =>
+            {
+                var splits = t.Split('_');
+                return new Stream { Lang = splits[0], Text = splits[1] };
+            }).ToArray();
+
             return new User
             {
                 Id = indexDoc.Id,
                 Email = indexDoc.Email,
                 Language = indexDoc.Language,
-                Streams = indexDoc.Streams
+                Streams = streams
             };
         }
 
         public static UserCredentialsIndexDoc ToUserIndexDoc(this User user)
         {
+            string[] streams = user.Streams.Select(t=> String.Format("{0}_{1}", t.Lang.ToLower(), t.Text.ToLower())).ToArray();
             return new UserCredentialsIndexDoc()
             {
                 Id = user.Id,
@@ -47,7 +55,7 @@ namespace NewsSwipesLibrary
                 Name = user.Name,
                 ProfileImage = user.ProfileImage,
                 CanPost = user.CanPost,
-                Streams = user.Streams
+                Streams = streams
             };
         }
 

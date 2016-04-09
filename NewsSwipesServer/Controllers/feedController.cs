@@ -113,11 +113,11 @@ namespace NewsSwipesServer.Controllers
         #endregion Publishing
 
         #region Feed
-        [HttpGet]
-        [Route("feed/getfeed/{streams}/{skip}")]
-        public async Task<IEnumerable<PublishedPost>> GetNewsFeed(string streams, int skip)
+        [HttpPost]
+        [Route("feed/getfeed/{skip}")]
+        public async Task<IEnumerable<PublishedPost>> GetNewsFeed([FromBody] Stream[] streams, int skip)
         {
-            string[] streamArray = streams.Split(',');
+            string[] streamArray = streams.Select(s => String.Format("{0}_{1}",s.Lang.ToLower(), s.Text.ToLower())).ToArray();
             List<PublishedPost> newsFeed = new List<PublishedPost>();
             try
             {
