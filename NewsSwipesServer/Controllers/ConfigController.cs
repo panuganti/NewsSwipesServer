@@ -21,6 +21,13 @@ namespace NewsSwipesServer.Controllers
         }
 
         [HttpGet]
+        [Route("config/CheckConnection/{value}")]
+        public string CheckConnection(string value)
+        {
+            return value;
+        }
+
+        [HttpGet]
         [Route("config/GetLabels/{lang}")]
         public Dictionary<string, string> GetLabels(string lang)
         {
