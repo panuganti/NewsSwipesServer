@@ -10,6 +10,7 @@ using System.Linq;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace GoogleDatastore
 {
@@ -21,7 +22,10 @@ namespace GoogleDatastore
         public IConfigurableHttpClientInitializer GetApplicationDefaultCredentials()
         {
             Console.WriteLine(Directory.GetCurrentDirectory());
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "C:\\GitHub\\NewsSwipesServer\\GoogleDatastore\\wwwarchishainnovatorscom-eaed27291ff7.json", EnvironmentVariableTarget.Process);
+
+            var docPath = HttpContext.Current.Server.MapPath("/bin/wwwarchishainnovatorscom-eaed27291ff7.json");
+            //var credentialsPath = Path.Combine(Directory.GetCurrentDirectory(), @".\wwwarchishainnovatorscom-eaed27291ff7.json");
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", docPath, EnvironmentVariableTarget.Process);
 
             try {
                 GoogleCredential credential =

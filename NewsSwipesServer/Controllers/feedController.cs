@@ -125,7 +125,8 @@ namespace NewsSwipesServer.Controllers
         public async Task<PostPreview> FetchFromFeedStream([FromBody] string feedStream)
         {
             try { 
-            return await _feeds.LoadNextFeed(feedStream);
+                var post = await _feeds.LoadNextFeed(feedStream);
+                return post;
             }
             catch (Exception e)
             {
