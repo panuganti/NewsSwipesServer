@@ -39,7 +39,8 @@ namespace NewsSwipesServer.Controllers
                 var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("id eq '{0}'", userId.ToLower()));
                 if (docs.Count != 0)
                 {
-                    return docs.Results.First().Document.ToUser();
+                    var user = docs.Results.First().Document.ToUser();
+                    return user;
                 }
                 throw new Exception("UserId invalid");
             }

@@ -40,6 +40,9 @@ namespace NewsSwipesLibrary
                 Id = indexDoc.Id,
                 Email = indexDoc.Email,
                 Language = indexDoc.Language,
+                Name = indexDoc.Name,
+                ProfileImage = indexDoc.ProfileImage,
+                CanPost = indexDoc.CanPost,
                 Streams = streams
             };
         }
