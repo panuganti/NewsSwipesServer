@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace DataContracts.Search
 {
@@ -54,5 +55,9 @@ namespace DataContracts.Search
         [DataMember]
         [JsonProperty(PropertyName = "tags")]
         public string[] Tags { get; set; }
+
+        [DataMember]
+        [JsonProperty(PropertyName = "OriginalLink")]
+        public string OriginalLink { get; set; }
     }
 }

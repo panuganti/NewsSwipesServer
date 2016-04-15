@@ -91,6 +91,7 @@ namespace Search
             if (!string.IsNullOrEmpty(filter))
             {
                 sp.Filter = filter;
+                sp.IncludeTotalResultCount = true;
             }
             DocumentSearchResult<T> response = await _indexClient.Documents.SearchAsync<T>(searchText, sp);
             return response;

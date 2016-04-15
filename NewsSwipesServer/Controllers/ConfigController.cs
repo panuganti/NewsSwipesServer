@@ -1,23 +1,30 @@
-﻿using System;
-using System.Web.Http;
+﻿using System.Web.Http;
 using DataContracts.Client;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http.Cors;
+using NewsSwipesLibrary;
 
 namespace NewsSwipesServer.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class ConfigController : Controller
-    {        
-        public ConfigController()
+    {
+        Config _config;
+
+        public ConfigController(): this(new Config())
         { }
+
+        private ConfigController(Config config)
+        {
+            _config = config;
+        }
 
         [HttpGet]
         [Route("config/GetLabels/{lang}")]
         public Dictionary<string, string> GetLabels(string lang)
         {
-            throw new NotImplementedException();
+            return _config.GetLabels(lang);
         }
 
         [HttpGet]
@@ -27,14 +34,15 @@ namespace NewsSwipesServer.Controllers
             return _streams.Where(s => s.Lang.ToLower() == lang.ToLower());
         }
 
+        [HttpGet]
         [Route("config/GetAllStreams")]
-        public IEnumerable<Stream> GetAllStreams(string lang)
+        public IEnumerable<Stream> GetAllStreams()
         {
             return _streams;
         }
 
         [HttpGet]
-        [Route("user/GetVersionInfo")]
+        [Route("config/GetVersionInfo")]
         public VersionInfo GetVersionInfo()
         {
             return _versionInfo;
@@ -64,6 +72,5 @@ namespace NewsSwipesServer.Controllers
             new Stream { Id = "11", Text = "Entertainment", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
             new Stream { Id = "12", Text = "Sports", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
         };
-
     }
 }
