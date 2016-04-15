@@ -38,6 +38,8 @@ namespace DataContracts.Client
     {
         [DataMember]
         public ImageEntity Image { get; set; }
+        [DataMember]
+        public bool ShouldSkip { get; set; }
     }
 
     [DataContract]

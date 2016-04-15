@@ -16,24 +16,34 @@ namespace NewsSwipesServer.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class FeedController : Controller
     {
-        FeedsIndex _feedsIndex;
+        SearchIndex _feedsIndex;
+        SearchIndex _skippedUrlsIndex;
+        SearchIndex _imagesIndex;
+        SearchIndex _userIndex;
+
         Datastore _ds;
         Utils _utils;
         Feeds _feeds;
 
-        public FeedController() : this(new Datastore(), new FeedsIndex(), new Utils())
+        public FeedController() : this(new Datastore(), IndexFactory.FeedsIndex, 
+                IndexFactory.SkippedUrlsIndex, IndexFactory.ImagesIndex, IndexFactory.CredentialsIndex, new Utils())
         {
         }
 
-        private FeedController(Datastore ds, FeedsIndex feedsIndex, Utils utils)
-            :this(ds, feedsIndex, new Feeds(utils, new FeedsIndex()), utils)
+        private FeedController(Datastore ds, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex, 
+                                                 SearchIndex imagesIndex, SearchIndex userIndex, Utils utils)
+            :this(ds, feedsIndex, skippedUrlsIndex, imagesIndex, userIndex, new Feeds(utils, feedsIndex, skippedUrlsIndex), utils)
         {
         } 
 
-        private FeedController(Datastore ds, FeedsIndex feedsIndex, Feeds feeds, Utils utils)
+        private FeedController(Datastore ds, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex, SearchIndex imagesIndex, 
+                                SearchIndex userIndex, Feeds feeds, Utils utils)
         {
             _ds = ds;
             _feedsIndex = feedsIndex;
+            _skippedUrlsIndex = skippedUrlsIndex;
+            _imagesIndex = imagesIndex;
+            _userIndex = userIndex;
             _feeds = feeds;
             _utils = utils;
         }
@@ -52,12 +62,45 @@ namespace NewsSwipesServer.Controllers
         [Route("feed/PostArticle")]
         public async Task<bool> PostArticle([FromBody] UnpublishedPost post)
         {
-            try {
+            DocumentIndexResult uploadedDoc;
+            try
+            {
+                if (post.ShouldSkip)
+                {
+                    SkippedUrlsIndexDoc skippedDoc = post.ToSkippedUrlsIndexDoc();
+                    uploadedDoc = await _skippedUrlsIndex.UploadDocument(skippedDoc);
+                    return uploadedDoc.Results.First().Succeeded;
+                }
+
                 FeedsIndexDoc doc = post.ToFeedsIndexDoc();
-                var uploadedDoc = await _feedsIndex.UploadDocument(doc);
-                return uploadedDoc.Results.First().Succeeded;
+
+                // Upload image to local resource
+                var filename = string.Format("{0}.jpeg", doc.Id);
+                var uploadSucc = await _ds.UploadImageAsync(filename, doc.ImageUrl);
+
+                // If tagged, upload to image db
+                bool imageUploaded = true;
+                var uploadedUrl = string.Format("https://storage.googleapis.com/www.archishainnovators.com/images/{0}", filename);
+                if (post.Image.Tags.Any())
+                {
+                    ImagesIndexDoc imageDoc = new ImagesIndexDoc
+                    {
+                        Id = doc.Id,
+                        DateAdded = DateTime.Now,
+                        SourceUrl = doc.ImageUrl,
+                        Url = uploadedUrl,
+                        Tags = post.Image.Tags
+                    };
+                    var uploadResult = await _imagesIndex.UploadDocument(imageDoc);
+                    imageUploaded = uploadResult.Results.First().Succeeded;
+                }
+                doc.ImageUrl = uploadedUrl;
+
+                // Upload post
+                uploadedDoc = await _feedsIndex.UploadDocument(doc);
+                return uploadedDoc.Results.First().Succeeded && imageUploaded;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -67,37 +110,72 @@ namespace NewsSwipesServer.Controllers
         [Route("feed/PreviewArticle")]
         public PostPreview PreviewArticle([FromBody] string url)
         {
-            return _utils.GetArticleData(url);
+            try
+            {
+                return _utils.GetArticleData(url);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
         [HttpPost]
         [Route("feed/FetchFromFeedStream")]
         public async Task<PostPreview> FetchFromFeedStream([FromBody] string feedStream)
         {
+            try { 
             return await _feeds.LoadNextFeed(feedStream);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
         #endregion Publishing
 
         #region Feed
         [HttpGet]
-        [Route("feed/getfeed/{streams}/{skip}")]
-        public async Task<IEnumerable<PublishedPost>> GetNewsFeed(string streams, int skip)
+        [Route("feed/getfeed/{userId}/{skip}")]
+        public async Task<IEnumerable<PublishedPost>> GetNewsFeed(string userId, int skip)
         {
-            string[] streamArray = streams.Split(',');
-            List<PublishedPost> newsFeed = new List<PublishedPost>();
             try
             {
-                foreach (var stream in streamArray)
+                var user = await _userIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                List<PublishedPost> newsFeed = new List<PublishedPost>();
+                try
                 {
+                    bool first = true;
+                    string filterString = "";
+                    foreach (var stream in user.Streams)
+                    {
+                        if (first)
+                        {
+                            filterString = String.Format("streams/any(t: t eq '{0}')", stream);
+                            first = false;
+                        }
+                        else
+                        {
+                            filterString = String.Format("{0} or streams/any(t: t eq '{1}')", filterString, stream);
+                        }
+                    }
                     var sp = new SearchParameters()
                     {
-                        Filter = String.Format("streams/any(t: t eq '{0}')", stream),
+                        Filter = filterString,
+                        OrderBy = new List<string> { "createdtime desc" },
+                        Top = 100,
+                        Skip = skip,
                         IncludeTotalResultCount = true
                     };
                     DocumentSearchResult<FeedsIndexDoc> feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
                     newsFeed.AddRange(feeds.Results.Select(t => t.Document.ToPublishedPost()));
+
+                    return newsFeed;
                 }
-                return newsFeed;
+                catch (Exception e)
+                {
+                    throw e;
+                }
             }
             catch (Exception e)
             {
@@ -109,17 +187,20 @@ namespace NewsSwipesServer.Controllers
         [Route("feed/timeline/{userId}/{skip}")]
         public async Task<IEnumerable<PublishedPost>> GetTimeline(string userId, int skip)
         {
-            try {
+            try
+            {
                 var sp = new SearchParameters()
                 {
                     Filter = string.Format("postedby eq '{0}'", userId),
                     OrderBy = new List<string> { "createddate" }
                 };
                 var feeds = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
-                return feeds.Results.Select(t=>t.Document.ToPublishedPost());
+                return feeds.Results.Select(t => t.Document.ToPublishedPost());
             }
-            catch(Exception e)
-            { throw e; }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
         #endregion Feed
@@ -127,51 +208,42 @@ namespace NewsSwipesServer.Controllers
         #region UserAction
         [HttpPost]
         [Route("feed/AddUserReaction")]
-        public int AddUserReaction([FromBody]UserReaction reaction)
+        public async Task<string[]> AddUserReaction([FromBody]UserReaction reaction)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var doc = await _feedsIndex.LookupDocument<FeedsIndexDoc>(reaction.ArticleId);
+                var likedby = doc.LikedBy.ToList();
+                var sharedby = doc.SharedBy.ToList();
+                bool likeOrShare = true;
+                switch (reaction.ReactionType)
+                {
+                    case "Like":
+                        likedby.Add(reaction.UserId); break;
+                    case "UnLike":
+                        likedby.Remove(reaction.UserId); break;
+                    case "ReTweet":
+                        sharedby.Add(reaction.UserId); likeOrShare = false; break;
+                    case "UnReTweet":
+                        sharedby.Remove(reaction.UserId); likeOrShare = false; break;
+                    default: throw new Exception("Unknown Reaction Type");
+                }
+                var indexDoc = reaction.ToFeedIndexDoc(likedby.ToArray(), sharedby.ToArray());
+                var uploadedDoc = await _feedsIndex.UploadDocument(indexDoc);
+                if (uploadedDoc.Results.First().Succeeded)
+                {
+                    if (likeOrShare) { return likedby.ToArray(); }
+                    else { return sharedby.ToArray(); }
+                }
+                throw new Exception("Could not apply User Reaction");
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Could not apply User Reaction");
+            }
         }
 
         #endregion UserAction
 
-        /*
-[HttpPost]
-[Route("feed/uploadimagefromurl")]
-public bool UploadImageFromUrl([FromBody]UploadObject uploadObj)
-{
-    _ds.Upload(uploadObj.Filename, uploadObj.Url).Wait();
-    return true;
-}
-*/
-
-
-        /*
-        [HttpGet]
-        public int AddLike(string request)
-        {
-            // UserId, articleId
-            return 0;
-        }
-
-        [HttpGet]
-        public int RemoveLike(string request)
-        {
-            // UserId, articleId
-            return 0;
-        }
-
-        [HttpGet]
-        public int Retweet(string request)
-        {
-            // UserId, articleId
-            return 0;
-        }
-
-        // POST api/feed
-        [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
-        */
     }
 }

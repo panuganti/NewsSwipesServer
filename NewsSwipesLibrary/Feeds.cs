@@ -47,32 +47,37 @@ namespace NewsSwipesLibrary
         };
 
         private Dictionary<string, string> _telugufeeds = new Dictionary<string, string>() {
+            {"oneindia_telugunews", "http://telugu.oneindia.com/rss/telugu-news-fb.xml" },
+            {"oneindia_telugufeature", "http://telugu.oneindia.com/rss/telugu-feature-fb.xml" },
             {"cinejosh", "http://www.cinejosh.com/rss-feed/0/telugu.html" }
         };
 
         private Utils _utils;
-        FeedsIndex _feedsIndex;
+        SearchIndex _feedsIndex;
+        SearchIndex _skippedUrlsIndex;
 
-        public Feeds(Utils utils, FeedsIndex feedsIndex)
+        public Feeds(Utils utils, SearchIndex feedsIndex, SearchIndex skippedUrlsIndex)
         {
             _utils = utils;
             _feedsIndex = feedsIndex;
+            _skippedUrlsIndex = skippedUrlsIndex;
         }
 
-        public IEnumerable<Feed> LoadFeeds(string feedUrl)
+        public Task<Feed[]> LoadFeeds(string feedUrl)
         {
             XDocument xDoc = XDocument.Load(feedUrl);
-            var feeds = xDoc.Descendants("item")
-                .Select(
+            var potentialFeeds = xDoc.Descendants("item");
+            var feeds = potentialFeeds
+                .Select(async 
                     t =>
                         new Feed
                         {
                             Title = t.Element("title").Value,
-                            Link = t.Element("link").Value,
+                            Link = await _utils.GetLandingPageUrl(t.Element("link").Value),
                             PublishedDate = DateTime.Parse(t.Element("pubDate").Value),
                             Description = Feeds.StripTagsRegexCompiled(t.Element("description").Value)
                         });
-            return feeds.ToList();
+            return Task.WhenAll(feeds);
         }
 
         private string GetNextFeedSource(string lang)
@@ -107,40 +112,42 @@ namespace NewsSwipesLibrary
         public async Task<PostPreview> LoadNextFeed(string lang)
         {
             string feedsource = GetNextFeedSource(lang);
-            var feeds = LoadFeeds(feedsource);
-            foreach(var feed in feeds)
+            var feeds = await LoadFeeds(feedsource);
+            foreach (var feed in feeds)
             {
-                try {
-                    var sp = new SearchParameters()
+                try
+                {
+                    var sp1 = new SearchParameters()
                     {
                         Filter = String.Format("landingpageurl eq '{0}'", feed.Link.ToLower()),
                         IncludeTotalResultCount = true
                     };
-                    var response = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp);
-                    if (response.Results.Count() > 0) { continue; } // Instead get totalcount
-                    return ToPostPreview(feed);
+                    var response1 = await _feedsIndex.SearchAsync<FeedsIndexDoc>("*", sp1);
+
+                    var sp2 = new SearchParameters()
+                    {
+                        Filter = String.Format("url eq '{0}'", feed.Link.ToLower()),
+                        IncludeTotalResultCount = true
+                    };
+
+                    var response2 = await _skippedUrlsIndex.SearchAsync<SkippedUrlsIndexDoc>("*", sp2);
+
+                    if (response1.Count > 0 || response2.Count > 0) { continue; }
+                    try
+                    {
+                        return feed.ToPostPreview(_utils);
+                    }
+                    catch (Exception e)
+                    {
+                        continue;
+                    }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     throw e;
                 }
             }
-            return ToPostPreview(feeds.First());
-        }
-
-        public PostPreview ToPostPreview(Feed feed)
-        {
-            var postPreview = new PostPreview()
-            {
-                Date = feed.PublishedDate.ToString(),
-                CardStyle = "Horizontal",
-                Heading = feed.Title,
-                Snippet = feed.Description,
-                OriginalLink = feed.Link,
-                Images = _utils.ExtractImages(feed.Link),
-                ImagesFromDb = new List<DbImage>().ToArray()
-            };
-            return postPreview;
+            return feeds.First().ToPostPreview(_utils);
         }
     }
 }

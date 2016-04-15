@@ -7,22 +7,27 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Web.Http.Cors;
 using NewsSwipesLibrary;
+using System.Collections.Generic;
+using GoogleDatastore;
+using Newtonsoft.Json;
 
 namespace NewsSwipesServer.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class UserController : Controller
     {
-        private CredentialsIndex _credentialsIndex;
+        private SearchIndex _credentialsIndex;
         private Config _config;
-        
-        public UserController(): this (new CredentialsIndex(), new Config())
+        private Datastore _ds; 
+
+        public UserController() : this(IndexFactory.CredentialsIndex, new Config(), new Datastore())
         { }
 
-        private UserController(CredentialsIndex credentialsIndex, Config config)
+        private UserController(SearchIndex credentialsIndex, Config config, Datastore ds)
         {
             _credentialsIndex = credentialsIndex;
             _config = config;
+            _ds = ds;
         }
 
         [HttpGet]
@@ -49,8 +54,9 @@ namespace NewsSwipesServer.Controllers
         [Route("user/CheckIfEmailExists/{email}")]
         public async Task<bool> CheckIfEmailExists(string email)
         {
-            try {
-                var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", 
+            try
+            {
+                var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*",
                                         String.Format("email eq '{0}'", email.ToLower()));
                 if (docs.Count != 0)
                 {
@@ -58,7 +64,7 @@ namespace NewsSwipesServer.Controllers
                 }
                 return false;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -68,7 +74,8 @@ namespace NewsSwipesServer.Controllers
         [Route("user/ValidateCredentials")]
         public async Task<User> ValidateCredentials([FromBody]UserCredentials credentials)
         {
-            try {
+            try
+            {
                 var docs = await _credentialsIndex
                     .Search<UserCredentialsIndexDoc>("*", String.Format("email eq '{0}'", credentials.Email.ToLower()));
                 if (docs.Count == 1)
@@ -82,7 +89,7 @@ namespace NewsSwipesServer.Controllers
                 }
                 throw new Exception("None or Duplicate Users found");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -93,7 +100,8 @@ namespace NewsSwipesServer.Controllers
         [Route("user/SignUp")]
         public async Task<User> SignUp([FromBody]UserCredentials credentials)
         {
-            try {
+            try
+            {
                 bool isAlreadySignedUp = await CheckIfEmailExists(credentials.Email);
                 if (isAlreadySignedUp)
                 {
@@ -110,7 +118,7 @@ namespace NewsSwipesServer.Controllers
                 // If Signup success
                 return indexDoc.ToUser();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -125,28 +133,169 @@ namespace NewsSwipesServer.Controllers
             return uploadedDoc.Results.First().Succeeded;
         }
 
+        #region UserInfo
+        [HttpPost]
+        [Route("user/UpdateUserDeviceInfo")]
+        public async Task<bool> UpdateUserDeviceInfo([FromBody]UserDeviceInfo deviceInfo)
+        {
+            try {
+                return await _ds.UploadStorageInfoAsync(
+                    deviceInfo.UserId == null ? Guid.NewGuid().ToString() : deviceInfo.UserId, JsonConvert.SerializeObject(deviceInfo));
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [Route("user/UpdateUserGeoInfo")]
+        public async Task<bool> UpdateUserGeoInfo([FromBody]UserGeoInfo geoInfo)
+        {
+            try { 
+            return await _ds.UploadStorageInfoAsync(geoInfo.UserId == null ? Guid.NewGuid().ToString() : geoInfo.UserId, JsonConvert.SerializeObject(geoInfo));
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [Route("user/UpdateUserContactList")]
+        public async Task<bool> UpdateUserContactList([FromBody]UserContactsInfo contactsInfo)
+        {
+            try { 
+            return await _ds.UploadStorageInfoAsync(contactsInfo.UserId == null ? Guid.NewGuid().ToString() : contactsInfo.UserId, JsonConvert.SerializeObject(contactsInfo));
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+        #endregion UserInfo
+
         [HttpGet]
         [Route("user/GetStreams/{userId}")]
         public async Task<IEnumerable<Stream>> GetStreams(string userId)
         {
-            var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("userid eq {0}", userId.ToLower()));
-            if (docs.Count == 1)
+            try { 
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            var streams = _config.AllStreams.Where(s => s.Lang.ToLower() == user.Language.ToLower());
+            var userSelectStreams = new List<Stream>();
+            foreach(var stream in streams)
             {
-                var storedUser = docs.Results.First().Document;
-                return storedUser.Streams;
+                Stream s = stream;
+                if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))
+                {
+                    s.UserSelected = false;
+                }
+                userSelectStreams.Add(s);
+            }
+            return userSelectStreams;
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
 
-        [HttpGet]
-        [Route("user/GetUserInfo/{userId}")]
-        public async Task<User> GetUserInfo(string userId)
+        [HttpPost]
+        [Route("user/UpdateStreams/{userId}")]
+        public async Task<IEnumerable<Stream>> UpdateStreams(string userId, [FromBody] Stream[] updatedStreams)
         {
-            var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("userid eq {0}", userId.ToLower()));
-            if (docs.Count == 1)
+            try { 
+            var streams = _config.AllStreams;
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            var userSelectStreams = new List<Stream>();
+            foreach (var stream in streams)
             {
-                var storedUser = docs.Results.First().Document;
-                return storedUser.ToUser();
+                Stream s = stream;
+                if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))
+                {
+                    s.UserSelected = false;
+                }
+                userSelectStreams.Add(s);
+            }
+            return userSelectStreams;
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
+
+        #region Contacts
+        [HttpGet]
+        [Route("user/FetchContacts/{userId}")]
+        public async Task<IEnumerable<UserContact>> FetchContacts(string userId)
+        {
+            try { 
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            throw new NotImplementedException();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [Route("user/UpdateContacts/{userId}")]
+        public async Task<bool> UpdateContacts([FromBody]IEnumerable<UserContact> userContacts, string userId)
+        {
+            try { 
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>("");
+            throw new NotImplementedException();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [Route("user/UpdateContact/{userId}")]
+        public async Task<bool> UpdateContact([FromBody]UserContact userContact, string userId)
+        {
+            try { 
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            throw new NotImplementedException();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [Route("user/DeleteContact/{userId}")]
+        public async Task<bool> DeleteContact([FromBody]UserContact userContact, string userId)
+        {
+            try { 
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            throw new NotImplementedException();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [Route("user/UnFollowContact/{userId}")]
+        public async Task<bool> UnFollowContact([FromBody]UserContact userContact, string userId)
+        {
+            try { 
+            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+            throw new NotImplementedException();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        #endregion Contacts
     }
 }
