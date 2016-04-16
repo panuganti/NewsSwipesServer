@@ -7,6 +7,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
+using Stream = DataContracts.Client.Stream;
+using System.Collections.Generic;
+using NewsSwipesLibrary.ExtensionMethods;
 
 namespace NewsSwipesLibrary
 {
@@ -148,7 +151,17 @@ namespace NewsSwipesLibrary
             {
                 throw e;
             }
+        }
 
+        public static Stream[] ToUserStreams(Stream[] streams, string[] indexStreams)
+        {
+            var userStreams = new List<Stream>();
+            userStreams.AddRange(streams);
+            foreach (var stream in userStreams)
+            {
+                stream.UserSelected = indexStreams.Contains(stream.ToIndexStream());
+            }
+            return userStreams.ToArray();
         }
     }
 }

@@ -39,7 +39,9 @@ namespace NewsSwipesServer.Controllers
                 var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("id eq '{0}'", userId.ToLower()));
                 if (docs.Count != 0)
                 {
-                    return docs.Results.First().Document.ToUser();
+                    var userIndexDoc = docs.Results.First().Document;
+                    var user =  userIndexDoc.ToUser(_config);
+                    return user;
                 }
                 throw new Exception("UserId invalid");
             }
@@ -83,7 +85,7 @@ namespace NewsSwipesServer.Controllers
                     var storedCredentials = docs.Results.First().Document;
                     if (storedCredentials.Password == credentials.Password)
                     {
-                        return storedCredentials.ToUser();
+                        return storedCredentials.ToUser(_config);
                     }
                     throw new Exception("Password Incorrect");
                 }
@@ -108,7 +110,11 @@ namespace NewsSwipesServer.Controllers
                     throw new Exception(string.Format("Email {0} already a user", credentials.Email));
                 }
                 // TODO: Check if password has min requirements
-                var indexDoc = credentials.ToUserCredentialsIndexDoc(_config);
+                var indexDoc = credentials.ToUserCredentialsIndexDoc();
+
+                // Get default streams... and get user streams from contacts
+                indexDoc.Streams = _config.AllStreams.Where(t => t.Lang.ToLower() == credentials.Language.ToLower())
+                                    .Select(t => String.Format("{0}_{1}", t.Lang.ToLower(), t.Text.ToLower())).ToArray();
                 var uploadedDoc = await _credentialsIndex.UploadDocument(indexDoc);
                 if (!uploadedDoc.Results.First().Succeeded)
                 {
@@ -116,7 +122,7 @@ namespace NewsSwipesServer.Controllers
                 }
 
                 // If Signup success
-                return indexDoc.ToUser();
+                return indexDoc.ToUser(_config);
             }
             catch (Exception e)
             {
@@ -129,8 +135,15 @@ namespace NewsSwipesServer.Controllers
         [Route("user/UpdateUserProfile")]
         public async Task<bool> UpdateUserProfile([FromBody]User user)
         {
-            var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
-            return uploadedDoc.Results.First().Succeeded;
+            try
+            {
+                var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
+                return uploadedDoc.Results.First().Succeeded;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
         #region UserInfo
@@ -157,7 +170,7 @@ namespace NewsSwipesServer.Controllers
             }
             catch (Exception e)
             {
-                throw e;
+                throw e; 
             }
         }
 
@@ -205,7 +218,7 @@ namespace NewsSwipesServer.Controllers
         public async Task<IEnumerable<Stream>> UpdateStreams(string userId, [FromBody] Stream[] updatedStreams)
         {
             try { 
-            var streams = _config.AllStreams;
+            var streams = updatedStreams;
             var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
             var userSelectStreams = new List<Stream>();
             foreach (var stream in streams)
