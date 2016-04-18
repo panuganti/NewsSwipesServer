@@ -126,12 +126,19 @@ namespace NewsSwipesLibrary
 
         public async Task<string> GetLandingPageUrl(string url)
         {
-            // Create a New HttpClient object.
-            HttpClient client = new HttpClient();
-            HttpResponseMessage response = await client.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-            string responseUri = response.RequestMessage.RequestUri.ToString();
-            return responseUri;
+            try
+            {
+                // Create a New HttpClient object.
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                string responseUri = response.RequestMessage.RequestUri.ToString();
+                return responseUri;
+            }
+            catch(Exception e)
+            {
+                return null;
+            }
         }
 
         public string[] ExtractImages(string url)

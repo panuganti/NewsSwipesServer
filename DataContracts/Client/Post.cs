@@ -59,7 +59,7 @@ namespace DataContracts.Client
     }
 
     [DataContract]
-    public class PublishedPost : PostableEntity
+    public class PublishedPost: PostableEntity
     {
         [DataMember]
         public string Id { get; set; }

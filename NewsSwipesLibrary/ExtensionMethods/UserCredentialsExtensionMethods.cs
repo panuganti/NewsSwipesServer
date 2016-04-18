@@ -3,6 +3,7 @@ using System.Linq;
 using DataContracts.Search;
 using DataContracts.Client;
 using System.Collections.Generic;
+using NewsSwipesLibrary.ExtensionMethods;
 
 namespace NewsSwipesLibrary
 {
@@ -22,29 +23,27 @@ namespace NewsSwipesLibrary
             return indexDoc;
         }
 
-        public static User ToUser(this UserCredentialsIndexDoc indexDoc, Config config)
+        public static User ToUser(this UserCredentialsIndexDoc indexDoc, IEnumerable<Stream> AllStreams)
         {
-            // TODO: Have seperate code for converters (other aspects of stream missing), lower/upper case is missing
-            // streams, user streams
-            List<Stream> streams = indexDoc.Streams.Select(t =>
+            var userStreams = AllStreams.Select(t => new Stream
             {
-                var splits = t.Split('_');
-                if (splits.Length == 2)
-                {
-                    return new Stream { Lang = splits[0], Text = splits[1], UserSelected = true };
-                }
-                return null; // TODO:
-            }).ToList();
-
-            var langStreams = config.AllStreams.Where(s => s.Lang.ToLower() == indexDoc.Language.ToLower());
+                Id = t.Id,
+                Text = t.Text,
+                Lang = t.Lang,
+                IsAdmin = t.IsAdmin,
+                UserSelected = indexDoc.Streams.Contains(t.ToIndexStream()),
+                backgroundImageUrl = t.backgroundImageUrl
+            }).ToArray();
 
             return new User
             {
                 Id = indexDoc.Id,
                 Email = indexDoc.Email,
                 Language = indexDoc.Language,
-                Streams = langStreams.ToArray(),
-                CanPost = indexDoc.CanPost
+                Name = indexDoc.Name,
+                ProfileImage = indexDoc.ProfileImage,
+                CanPost = indexDoc.CanPost,
+                Streams = userStreams
             };
         }
 

@@ -41,8 +41,7 @@ namespace NewsSwipesServer.Controllers
                 if (docs.Count != 0)
                 {
                     var userIndexDoc = docs.Results.First().Document;
-                    var user =  userIndexDoc.ToUser(_config);
-                    return user;
+                    return userIndexDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == userIndexDoc.Language.ToLower()));
                 }
                 throw new Exception("UserId invalid");
             }
@@ -54,7 +53,7 @@ namespace NewsSwipesServer.Controllers
 
         // GET api/user/GetUserInfo/request
         [HttpGet]
-        [Route("user/CheckIfEmailExists")]
+        [Route("user/CheckIfEmailExists/{email}")]
         public async Task<bool> CheckIfEmailExists(string email)
         {
             try
@@ -86,7 +85,7 @@ namespace NewsSwipesServer.Controllers
                     var storedCredentials = docs.Results.First().Document;
                     if (storedCredentials.Password == credentials.Password)
                     {
-                        return storedCredentials.ToUser(_config);
+                        return storedCredentials.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == storedCredentials.Language.ToLower()));
                     }
                     throw new Exception("Password Incorrect");
                 }
@@ -123,7 +122,7 @@ namespace NewsSwipesServer.Controllers
                 }
 
                 // If Signup success
-                return indexDoc.ToUser(_config);
+                return indexDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == indexDoc.Language.ToLower()));
             }
             catch (Exception e)
             {

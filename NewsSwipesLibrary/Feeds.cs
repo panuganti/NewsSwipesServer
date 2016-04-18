@@ -66,17 +66,21 @@ namespace NewsSwipesLibrary
         public Task<Feed[]> LoadFeeds(string feedUrl)
         {
             XDocument xDoc = XDocument.Load(feedUrl);
-            var potentialFeeds = xDoc.Descendants("item");
+            var potentialFeeds = xDoc.Descendants("item").Take(5);
             var feeds = potentialFeeds
-                .Select(async 
+                .Select(async
                     t =>
-                        new Feed
+                    {
+                        var landingPage = await _utils.GetLandingPageUrl(t.Element("link").Value);
+                        if (landingPage == null) { return null; }
+                        return new Feed
                         {
                             Title = t.Element("title").Value,
-                            Link = await _utils.GetLandingPageUrl(t.Element("link").Value),
+                            Link = landingPage,
                             PublishedDate = DateTime.Parse(t.Element("pubDate").Value),
                             Description = Feeds.StripTagsRegexCompiled(t.Element("description").Value)
-                        });
+                        };
+                    }).ToArray();
             return Task.WhenAll(feeds);
         }
 
@@ -113,7 +117,7 @@ namespace NewsSwipesLibrary
         {
             string feedsource = GetNextFeedSource(lang);
             var feeds = await LoadFeeds(feedsource);
-            foreach (var feed in feeds)
+            foreach (var feed in feeds.Where(t => t.Link != null))
             {
                 try
                 {
