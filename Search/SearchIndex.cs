@@ -48,11 +48,11 @@ namespace Search
             }
         }
 
-        public async Task<DocumentIndexResult> UpdateDocument<T>(T doc) where T : SearchDoc
+        public async Task<IndexingResult> UpdateDocument<T>(T doc) where T : SearchDoc
         {
             try
             {
-                return await UploadDocuments(new[] { doc });
+                return (await UploadDocuments(new[] { doc })).Results.First();
             }
             catch (Exception e)
             {

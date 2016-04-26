@@ -10,6 +10,7 @@ using NewsSwipesLibrary;
 using System.Collections.Generic;
 using GoogleDatastore;
 using Newtonsoft.Json;
+using NewsSwipesLibrary.ExtensionMethods;
 
 namespace NewsSwipesServer.Controllers
 {
@@ -39,8 +40,8 @@ namespace NewsSwipesServer.Controllers
                 var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("id eq '{0}'", userId.ToLower()));
                 if (docs.Count != 0)
                 {
-                    var user = docs.Results.First().Document.ToUser();
-                    return user;
+                    var userIndexDoc = docs.Results.First().Document;
+                    return userIndexDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == userIndexDoc.Language.ToLower()));
                 }
                 throw new Exception("UserId invalid");
             }
@@ -84,7 +85,7 @@ namespace NewsSwipesServer.Controllers
                     var storedCredentials = docs.Results.First().Document;
                     if (storedCredentials.Password == credentials.Password)
                     {
-                        return storedCredentials.ToUser();
+                        return storedCredentials.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == storedCredentials.Language.ToLower()));
                     }
                     throw new Exception("Password Incorrect");
                 }
@@ -109,7 +110,11 @@ namespace NewsSwipesServer.Controllers
                     throw new Exception(string.Format("Email {0} already a user", credentials.Email));
                 }
                 // TODO: Check if password has min requirements
-                var indexDoc = credentials.ToUserCredentialsIndexDoc(_config);
+                var indexDoc = credentials.ToUserCredentialsIndexDoc();
+
+                // Get default streams... and get user streams from contacts
+                indexDoc.Streams = _config.AllStreams.Where(t => t.Lang.ToLower() == credentials.Language.ToLower())
+                                    .Select(t => String.Format("{0}_{1}", t.Lang.ToLower(), t.Text.ToLower())).ToArray();
                 var uploadedDoc = await _credentialsIndex.UploadDocument(indexDoc);
                 if (!uploadedDoc.Results.First().Succeeded)
                 {
@@ -117,7 +122,7 @@ namespace NewsSwipesServer.Controllers
                 }
 
                 // If Signup success
-                return indexDoc.ToUser();
+                return indexDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == indexDoc.Language.ToLower()));
             }
             catch (Exception e)
             {
@@ -130,8 +135,15 @@ namespace NewsSwipesServer.Controllers
         [Route("user/UpdateUserProfile")]
         public async Task<bool> UpdateUserProfile([FromBody]User user)
         {
-            var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
-            return uploadedDoc.Results.First().Succeeded;
+            try
+            {
+                var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
+                return uploadedDoc.Succeeded;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
         #region UserInfo
@@ -158,7 +170,7 @@ namespace NewsSwipesServer.Controllers
             }
             catch (Exception e)
             {
-                throw e;
+                throw e; 
             }
         }
 
@@ -180,20 +192,19 @@ namespace NewsSwipesServer.Controllers
         [Route("user/GetStreams/{userId}")]
         public async Task<IEnumerable<Stream>> GetStreams(string userId)
         {
-            try { 
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-            var streams = _config.AllStreams.Where(s => s.Lang.ToLower() == user.Language.ToLower());
-            var userSelectStreams = new List<Stream>();
-            foreach(var stream in streams)
+            try
             {
-                Stream s = stream;
-                if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                var streams = _config.AllStreams.Where(s => s.Lang.ToLower() == user.Language.ToLower());
+                return streams.Select(t => new Stream
                 {
-                    s.UserSelected = false;
-                }
-                userSelectStreams.Add(s);
-            }
-            return userSelectStreams;
+                    Id = t.Id,
+                    Text = t.Text,
+                    Lang = t.Lang,
+                    IsAdmin = t.IsAdmin,
+                    UserSelected = user.Streams.Contains(t.ToIndexStream()),
+                    backgroundImageUrl = t.backgroundImageUrl
+                }).ToArray();
             }
             catch (Exception e)
             {
@@ -203,22 +214,15 @@ namespace NewsSwipesServer.Controllers
 
         [HttpPost]
         [Route("user/UpdateStreams/{userId}")]
-        public async Task<IEnumerable<Stream>> UpdateStreams(string userId, [FromBody] Stream[] updatedStreams)
+        public async Task<bool> UpdateStreams(string userId, [FromBody] Stream[] updatedStreams)
         {
-            try { 
-            var streams = _config.AllStreams;
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-            var userSelectStreams = new List<Stream>();
-            foreach (var stream in streams)
+            try
             {
-                Stream s = stream;
-                if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))
-                {
-                    s.UserSelected = false;
-                }
-                userSelectStreams.Add(s);
-            }
-            return userSelectStreams;
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                user.Streams = updatedStreams.Select(t => t.ToIndexStream()).ToArray();
+                var result = await _credentialsIndex.UpdateDocument(user);
+                return result.Succeeded;
+                // TODO: Add support for UserContacts Followers
             }
             catch (Exception e)
             {

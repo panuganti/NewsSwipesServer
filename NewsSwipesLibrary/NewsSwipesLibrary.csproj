@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="ExtensionMethods\FeedExtensionMethods.cs" />
+    <Compile Include="ExtensionMethods\StreamExtensionMethods.cs" />
     <Compile Include="ExtensionMethods\UserCredentialsExtensionMethods.cs" />
     <Compile Include="Feeds.cs" />
     <Compile Include="HtmlRemoval.cs" />
