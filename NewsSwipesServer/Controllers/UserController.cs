@@ -195,6 +195,7 @@ namespace NewsSwipesServer.Controllers
             try
             {
                 var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+
                 var streams = _config.AllStreams.Where(s => s.Lang.ToLower() == user.Language.ToLower());
                 return streams.Select(t => new Stream
                 {
@@ -219,7 +220,7 @@ namespace NewsSwipesServer.Controllers
             try
             {
                 var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-                user.Streams = updatedStreams.Select(t => t.ToIndexStream()).ToArray();
+                user.Streams = updatedStreams.Where(s => s.UserSelected).Select(t => t.ToIndexStream()).ToArray();
                 var result = await _credentialsIndex.UpdateDocument(user);
                 return result.Succeeded;
                 // TODO: Add support for UserContacts Followers
