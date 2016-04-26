@@ -287,9 +287,10 @@ namespace NewsSwipesServer.Controllers
         [Route("user/UpdateContact/{userId}")]
         public async Task<bool> UpdateContact([FromBody]UserContact userContact, string userId)
         {
-            try { 
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-            throw new NotImplementedException();
+            try
+            {
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                throw new NotImplementedException();
             }
             catch (Exception e)
             {
