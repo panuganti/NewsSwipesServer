@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
+using NReco.ImageGenerator;
 
 namespace NewsSwipesLibrary
 {
@@ -155,7 +156,13 @@ namespace NewsSwipesLibrary
             {
                 throw e;
             }
+        }
 
+        public string RenderHtml(string html)
+        {
+            var htmlToImageConv = new NReco.ImageGenerator.HtmlToImageConverter();
+            var jpegBytes = htmlToImageConv.GenerateImage(html, ImageFormat.Jpeg);
+            return Convert.ToBase64String(jpegBytes);
         }
     }
 }
