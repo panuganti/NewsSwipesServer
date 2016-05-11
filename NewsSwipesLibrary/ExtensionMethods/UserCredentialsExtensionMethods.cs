@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DataContracts.Search;
 using DataContracts.Client;
-using Newtonsoft.Json;
+using System.Collections.Generic;
+using NewsSwipesLibrary.ExtensionMethods;
 
 namespace NewsSwipesLibrary
 {
     public static class UserCredentialsExtensionMethods
     {
-        public static UserCredentialsIndexDoc ToUserCredentialsIndexDoc(this UserCredentials credentials, Config config)
+        public static UserCredentialsIndexDoc ToUserCredentialsIndexDoc(this UserCredentials credentials)
         {
             var indexDoc = new UserCredentialsIndexDoc()
             {
@@ -20,19 +18,21 @@ namespace NewsSwipesLibrary
                 Password = credentials.Password.ToLower(),
                 Language = credentials.Language.ToLower(),
                 CanPost = false,
-                Streams = config.AllStreams.Where(s => s.Lang.ToLower() == credentials.Language.ToLower())
-                            .Select(s => String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())).ToArray()
+                Streams = new string[] {}
             };
             return indexDoc;
         }
 
-        public static User ToUser(this UserCredentialsIndexDoc indexDoc)
+        public static User ToUser(this UserCredentialsIndexDoc indexDoc, IEnumerable<Stream> AllStreams)
         {
-            // TODO: Have seperate code for converters (other aspects of stream missing), lower/upper case is missing
-            Stream[] streams = indexDoc.Streams.Select(t =>
+            var userStreams = AllStreams.Select(t => new Stream
             {
-                var splits = t.Split('_');
-                return new Stream { Lang = splits[0], Text = splits[1] };
+                Id = t.Id,
+                Text = t.Text,
+                Lang = t.Lang,
+                IsAdmin = t.IsAdmin,
+                UserSelected = indexDoc.Streams.Contains(t.ToIndexStream()),
+                backgroundImageUrl = t.backgroundImageUrl
             }).ToArray();
 
             return new User
@@ -43,7 +43,7 @@ namespace NewsSwipesLibrary
                 Name = indexDoc.Name,
                 ProfileImage = indexDoc.ProfileImage,
                 CanPost = indexDoc.CanPost,
-                Streams = streams
+                Streams = userStreams
             };
         }
 

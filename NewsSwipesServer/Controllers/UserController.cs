@@ -10,6 +10,8 @@ using NewsSwipesLibrary;
 using System.Collections.Generic;
 using GoogleDatastore;
 using Newtonsoft.Json;
+using NewsSwipesLibrary.ExtensionMethods;
+using System.Net;
 
 namespace NewsSwipesServer.Controllers
 {
@@ -39,8 +41,8 @@ namespace NewsSwipesServer.Controllers
                 var docs = await _credentialsIndex.Search<UserCredentialsIndexDoc>("*", String.Format("id eq '{0}'", userId.ToLower()));
                 if (docs.Count != 0)
                 {
-                    var user = docs.Results.First().Document.ToUser();
-                    return user;
+                    var userIndexDoc = docs.Results.First().Document;
+                    return userIndexDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == userIndexDoc.Language.ToLower()));
                 }
                 throw new Exception("UserId invalid");
             }
@@ -84,7 +86,7 @@ namespace NewsSwipesServer.Controllers
                     var storedCredentials = docs.Results.First().Document;
                     if (storedCredentials.Password == credentials.Password)
                     {
-                        return storedCredentials.ToUser();
+                        return storedCredentials.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == storedCredentials.Language.ToLower()));
                     }
                     throw new Exception("Password Incorrect");
                 }
@@ -109,7 +111,11 @@ namespace NewsSwipesServer.Controllers
                     throw new Exception(string.Format("Email {0} already a user", credentials.Email));
                 }
                 // TODO: Check if password has min requirements
-                var indexDoc = credentials.ToUserCredentialsIndexDoc(_config);
+                var indexDoc = credentials.ToUserCredentialsIndexDoc();
+
+                // Get default streams... and get user streams from contacts
+                indexDoc.Streams = _config.AllStreams.Where(t => t.Lang.ToLower() == credentials.Language.ToLower())
+                                    .Select(t => String.Format("{0}_{1}", t.Lang.ToLower(), t.Text.ToLower())).ToArray();
                 var uploadedDoc = await _credentialsIndex.UploadDocument(indexDoc);
                 if (!uploadedDoc.Results.First().Succeeded)
                 {
@@ -117,7 +123,7 @@ namespace NewsSwipesServer.Controllers
                 }
 
                 // If Signup success
-                return indexDoc.ToUser();
+                return indexDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == indexDoc.Language.ToLower()));
             }
             catch (Exception e)
             {
@@ -130,8 +136,15 @@ namespace NewsSwipesServer.Controllers
         [Route("user/UpdateUserProfile")]
         public async Task<bool> UpdateUserProfile([FromBody]User user)
         {
-            var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
-            return uploadedDoc.Results.First().Succeeded;
+            try
+            {
+                var uploadedDoc = await _credentialsIndex.UpdateDocument(user.ToUserIndexDoc());
+                return uploadedDoc.Succeeded;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
         #region UserInfo
@@ -158,7 +171,7 @@ namespace NewsSwipesServer.Controllers
             }
             catch (Exception e)
             {
-                throw e;
+                throw e; 
             }
         }
 
@@ -167,7 +180,7 @@ namespace NewsSwipesServer.Controllers
         public async Task<bool> UpdateUserContactList([FromBody]UserContactsInfo contactsInfo)
         {
             try { 
-            return await _ds.UploadStorageInfoAsync(contactsInfo.UserId == null ? Guid.NewGuid().ToString() : contactsInfo.UserId, JsonConvert.SerializeObject(contactsInfo));
+                return await _ds.UploadStorageInfoAsync(contactsInfo.UserId == null ? Guid.NewGuid().ToString() : contactsInfo.UserId, JsonConvert.SerializeObject(contactsInfo));
             }
             catch (Exception e)
             {
@@ -176,24 +189,25 @@ namespace NewsSwipesServer.Controllers
         }
         #endregion UserInfo
 
+        #region Streams
         [HttpGet]
         [Route("user/GetStreams/{userId}")]
-        public async Task<IEnumerable<Stream>> GetStreams(string userId)
+        public async Task<IEnumerable<DataContracts.Client.Stream>> GetStreams(string userId)
         {
-            try { 
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-            var streams = _config.AllStreams.Where(s => s.Lang.ToLower() == user.Language.ToLower());
-            var userSelectStreams = new List<Stream>();
-            foreach(var stream in streams)
+            try
             {
-                Stream s = stream;
-                if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+
+                var streams = _config.AllStreams.Where(s => s.Lang.ToLower() == user.Language.ToLower());
+                return streams.Select(t => new DataContracts.Client.Stream
                 {
-                    s.UserSelected = false;
-                }
-                userSelectStreams.Add(s);
-            }
-            return userSelectStreams;
+                    Id = t.Id,
+                    Text = t.Text,
+                    Lang = t.Lang,
+                    IsAdmin = t.IsAdmin,
+                    UserSelected = user.Streams.Contains(t.ToIndexStream()),
+                    backgroundImageUrl = t.backgroundImageUrl
+                }).ToArray();
             }
             catch (Exception e)
             {
@@ -203,41 +217,52 @@ namespace NewsSwipesServer.Controllers
 
         [HttpPost]
         [Route("user/UpdateStreams/{userId}")]
-        public async Task<IEnumerable<Stream>> UpdateStreams(string userId, [FromBody] Stream[] updatedStreams)
+        public async Task<bool> UpdateStreams(string userId, [FromBody] DataContracts.Client.Stream[] updatedStreams)
         {
-            try { 
-            var streams = _config.AllStreams;
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-            var userSelectStreams = new List<Stream>();
-            foreach (var stream in streams)
+            try
             {
-                Stream s = stream;
-                if (!user.Streams.Contains(String.Format("{0}_{1}", s.Lang.ToLower(), s.Text.ToLower())))
-                {
-                    s.UserSelected = false;
-                }
-                userSelectStreams.Add(s);
-            }
-            return userSelectStreams;
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                user.Streams = updatedStreams.Where(s => s.UserSelected).Select(t => t.ToIndexStream()).ToArray();
+                var result = await _credentialsIndex.UpdateDocument(user);
+                return result.Succeeded;
+                // TODO: Add support for UserContacts Followers
             }
             catch (Exception e)
             {
                 throw e;
             }
         }
+        #endregion Streams
 
         #region Contacts
         [HttpGet]
         [Route("user/FetchContacts/{userId}")]
         public async Task<IEnumerable<UserContact>> FetchContacts(string userId)
         {
-            try { 
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-            throw new NotImplementedException();
+            try {
+                var contactsFilename = string.Format("https://storage.googleapis.com/www.archishainnovators.com/contacts/{0}", userId);
+                string contactsJson;
+                using (WebClient client = new WebClient())
+                {
+                    contactsJson = client.DownloadString(contactsFilename);
+                }
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                var userContacts = JsonConvert.DeserializeObject<UserContact[]>(contactsJson);
+                var userContactsWithFollowers = userContacts.Select(c => new UserContact
+                {
+                    Name = c.Name,
+                    Email = c.Email,
+                    Phone = c.Phone,
+                    ProfileImg = c.ProfileImg,
+                    IsOnNetwork = user.InNetworkEmailContacts.Contains(c.Email.ToLower()),
+                    IsFollowing = Array.IndexOf(user.Streams,c.Email.ToStream()) > -1 // TODO: User proper conversion
+                });
+                return userContactsWithFollowers;
             }
             catch (Exception e)
             {
-                throw e;
+                // Does not exists. Return empty list
+                return new List<UserContact>();
             }
         }
 
@@ -246,8 +271,11 @@ namespace NewsSwipesServer.Controllers
         public async Task<bool> UpdateContacts([FromBody]IEnumerable<UserContact> userContacts, string userId)
         {
             try { 
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>("");
-            throw new NotImplementedException();
+                var contacts = await _ds.UploadUserContactsAsync(userId, JsonConvert.SerializeObject(userContacts));
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                user.InNetworkEmailContacts = userContacts.Where(c => c.IsOnNetwork).Select(c => c.ToString()).ToArray(); // TODO: Check ToString()
+                var updatedUser = await _credentialsIndex.UpdateDocument(user);
+                return contacts && updatedUser.Succeeded;
             }
             catch (Exception e)
             {
@@ -259,9 +287,10 @@ namespace NewsSwipesServer.Controllers
         [Route("user/UpdateContact/{userId}")]
         public async Task<bool> UpdateContact([FromBody]UserContact userContact, string userId)
         {
-            try { 
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-            throw new NotImplementedException();
+            try
+            {
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                throw new NotImplementedException();
             }
             catch (Exception e)
             {
@@ -273,9 +302,24 @@ namespace NewsSwipesServer.Controllers
         [Route("user/DeleteContact/{userId}")]
         public async Task<bool> DeleteContact([FromBody]UserContact userContact, string userId)
         {
-            try { 
-            var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
-            throw new NotImplementedException();
+            try
+            {
+                var contactsFilename = string.Format("https://storage.googleapis.com/www.archishainnovators.com/contacts/{0}", userId);
+                string contactsJson;
+                using (WebClient client = new WebClient())
+                {
+                    contactsJson = client.DownloadString(contactsFilename);
+                }
+                var user = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(userId);
+                var userContacts = JsonConvert.DeserializeObject<UserContact[]>(contactsJson).ToList();
+                // First delete from all contacts
+                userContacts.RemoveAll(x => x.Email.Equals(userContact.Email));
+                var deleted = await _ds.UploadUserContactsAsync(user.Id, JsonConvert.SerializeObject(userContacts));
+                var userEmailContacts = user.InNetworkEmailContacts.ToList();
+                userEmailContacts.RemoveAll(x => x.Equals(userContact.Email));
+                user.InNetworkEmailContacts = userEmailContacts.ToArray();
+                var update = await _credentialsIndex.UpdateDocument(user);
+                return deleted && update.Succeeded;
             }
             catch (Exception e)
             {

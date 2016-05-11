@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using NReco.ImageGenerator;
+using Stream = DataContracts.Client.Stream;
+using System.Collections.Generic;
+using NewsSwipesLibrary.ExtensionMethods;
 
 namespace NewsSwipesLibrary
 {
@@ -16,7 +19,7 @@ namespace NewsSwipesLibrary
         public PostPreview GetArticleData(string url)
         {
             var uri = new Uri(url);
-            switch(uri.Host)
+            switch (uri.Host)
             {
                 case "http://timesofindia.indiatimes.com/": return TimesOfIndiaExtractor(url);
                 default: return DefaultArticleExtractor(url);
@@ -62,7 +65,8 @@ namespace NewsSwipesLibrary
             var isAbsolute = Uri.TryCreate(url, UriKind.Absolute, out result);
 
             if (isAbsolute) { return url; }
-            else {
+            else
+            {
                 return new Uri(new Uri(homeUrl), url).AbsoluteUri;
             }
         }
@@ -97,12 +101,12 @@ namespace NewsSwipesLibrary
                 var titleNode = htmlDoc.DocumentNode.Descendants("title").First();
 
                 var node = htmlDoc.DocumentNode;
-                string fullDescription = GetDescription(node); 
+                string fullDescription = GetDescription(node);
 
                 var images = htmlDoc.DocumentNode.Descendants("img")
                     .Where(img => img.Attributes.Contains("src"))
                     .Select(img => GetAbsoluteUri(img.Attributes["src"].Value, url)).Distinct();
-                
+
 
                 var postPreview = new PostPreview
                 {
@@ -133,7 +137,7 @@ namespace NewsSwipesLibrary
                 string responseUri = response.RequestMessage.RequestUri.ToString();
                 return responseUri;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return null;
             }
@@ -158,9 +162,20 @@ namespace NewsSwipesLibrary
             }
         }
 
+        public static Stream[] ToUserStreams(Stream[] streams, string[] indexStreams)
+        {
+            var userStreams = new List<Stream>();
+            userStreams.AddRange(streams);
+            foreach (var stream in userStreams)
+            {
+                stream.UserSelected = indexStreams.Contains(stream.ToIndexStream());
+            }
+            return userStreams.ToArray();
+        }
+
         public string RenderHtml(string html)
         {
-            var htmlToImageConv = new NReco.ImageGenerator.HtmlToImageConverter();
+            var htmlToImageConv = new HtmlToImageConverter();
             var jpegBytes = htmlToImageConv.GenerateImage(html, ImageFormat.Jpeg);
             return Convert.ToBase64String(jpegBytes);
         }

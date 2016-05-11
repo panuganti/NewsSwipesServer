@@ -31,21 +31,29 @@ namespace NewsSwipesLibrary
         private List<Stream> streams = new List<Stream>()
         {
             // English
-            new Stream { Id = "1", Text = "Politics", Lang = "English", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
-            new Stream { Id = "2", Text = "Entertainment", Lang = "English", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
-            new Stream { Id = "3", Text = "Sports", Lang = "English", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
+            new Stream { Id = "000", Text = "Politics", Lang = "English", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
+            new Stream { Id = "001", Text = "Entertainment", Lang = "English", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
+            new Stream { Id = "002", Text = "Sports", Lang = "English", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
+            new Stream { Id = "003", Text = "International", Lang = "English", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
+            new Stream { Id = "004", Text = "Other", Lang = "English", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
             // Hindi
-            new Stream { Id = "4", Text = "Politics", Lang = "Hindi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
-            new Stream { Id = "5", Text = "Entertainment", Lang = "Hindi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
-            new Stream { Id = "6", Text = "Sports", Lang = "Hindi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
+            new Stream { Id = "100", Text = "Politics", Lang = "Hindi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
+            new Stream { Id = "101", Text = "Entertainment", Lang = "Hindi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
+            new Stream { Id = "102", Text = "Sports", Lang = "Hindi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
+            new Stream { Id = "103", Text = "International", Lang = "Hindi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
+            new Stream { Id = "104", Text = "Other", Lang = "Hindi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
             // Telugu
-            new Stream { Id = "7", Text = "Politics", Lang = "Telugu", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
-            new Stream { Id = "8", Text = "Entertainment", Lang = "Telugu", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
-            new Stream { Id = "9", Text = "Sports", Lang = "Telugu", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
+            new Stream { Id = "300", Text = "Politics", Lang = "Telugu", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
+            new Stream { Id = "301", Text = "Entertainment", Lang = "Telugu", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
+            new Stream { Id = "302", Text = "Sports", Lang = "Telugu", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
+            new Stream { Id = "303", Text = "International", Lang = "Telugu", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
+            new Stream { Id = "304", Text = "Other", Lang = "Telugu", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
             // Marathi
-            new Stream { Id = "10", Text = "Politics", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
-            new Stream { Id = "11", Text = "Entertainment", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
-            new Stream { Id = "12", Text = "Sports", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
+            new Stream { Id = "400", Text = "Politics", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
+            new Stream { Id = "401", Text = "Entertainment", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
+            new Stream { Id = "402", Text = "Sports", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Sports.jpeg"},
+            new Stream { Id = "403", Text = "International", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Politics.jpeg"},
+            new Stream { Id = "404", Text = "Other", Lang = "Marathi", IsAdmin = true, UserSelected = true, backgroundImageUrl = "Entertainment.jpeg"},
         };
 
         /*

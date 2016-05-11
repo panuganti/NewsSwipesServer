@@ -246,5 +246,22 @@ namespace NewsSwipesServer.Controllers
 
         #endregion UserAction
 
+
+        #region Utils
+        [HttpPost]
+        [Route("feed/RenderHtml")]
+        public string RenderHtml([FromBody] string html)
+        {
+            try
+            {
+                var post = _utils.RenderHtml(html);
+                return post;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+        #endregion Utils
     }
 }

@@ -61,6 +61,18 @@ namespace GoogleDatastore
             }
         }
 
+        public async Task<bool> UploadUserContactsAsync(string filename, string data)
+        {
+            MemoryStream mem = new MemoryStream();
+            using (StreamWriter writer = new StreamWriter(mem))
+            {
+                writer.Write(data);
+                writer.Flush();
+                mem.Position = 0;
+                return await UploadAsync(filename, mem, "text/plain", "contacts");
+            }
+        }
+
         public async Task<bool> UploadStorageInfoAsync(string filename, string data)
         {
             MemoryStream mem = new MemoryStream();
