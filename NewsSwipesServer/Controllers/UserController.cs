@@ -100,6 +100,47 @@ namespace NewsSwipesServer.Controllers
 
         // POST api/values
         [HttpPost]
+        [Route("user/GetUser")]
+        public async Task<User> GetUser([FromBody]UserSignupInfo signupInfo)
+        {
+            try
+            {
+                UserCredentialsIndexDoc userDoc = null;
+                try
+                {
+                    userDoc = await _credentialsIndex.LookupDocument<UserCredentialsIndexDoc>(signupInfo.UserId.ToLower());
+                }
+                catch(Exception e) {}
+
+                if (userDoc == null)
+                {
+                    // TODO: Check if password has min requirements
+                    var indexDoc = signupInfo.ToUserCredentialsIndexDoc();
+
+                    // Get default streams... and get user streams from contacts
+                    indexDoc.Streams = _config.AllStreams.Where(t => t.Lang.ToLower() == signupInfo.Language.ToLower())
+                                        .Select(t => String.Format("{0}_{1}", t.Lang.ToLower(), t.Text.ToLower())).ToArray();
+                    var uploadedDoc = await _credentialsIndex.UploadDocument(indexDoc);
+                    if (!uploadedDoc.Results.First().Succeeded)
+                    {
+                        throw new Exception(string.Format("Sorry, could not sign you up. Please try again"));
+                    }
+                    // If Signup success
+                    return indexDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == indexDoc.Language.ToLower()));
+                }
+                else
+                {
+                    return userDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == userDoc.Language.ToLower()));
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        // POST api/values
+        [HttpPost]
         [Route("user/SignUp")]
         public async Task<User> SignUp([FromBody]UserCredentials credentials)
         {
@@ -112,8 +153,6 @@ namespace NewsSwipesServer.Controllers
                 }
                 // TODO: Check if password has min requirements
                 var indexDoc = credentials.ToUserCredentialsIndexDoc();
-
-                // Get default streams... and get user streams from contacts
                 indexDoc.Streams = _config.AllStreams.Where(t => t.Lang.ToLower() == credentials.Language.ToLower())
                                     .Select(t => String.Format("{0}_{1}", t.Lang.ToLower(), t.Text.ToLower())).ToArray();
                 var uploadedDoc = await _credentialsIndex.UploadDocument(indexDoc);
@@ -121,7 +160,6 @@ namespace NewsSwipesServer.Controllers
                 {
                     throw new Exception(string.Format("Sorry, could not sign you up. Please try again"));
                 }
-
                 // If Signup success
                 return indexDoc.ToUser(_config.AllStreams.Where(t => t.Lang.ToLower() == indexDoc.Language.ToLower()));
             }

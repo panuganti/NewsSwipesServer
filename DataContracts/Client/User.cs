@@ -216,6 +216,15 @@ namespace DataContracts.Client
     }
 
     [DataContract]
+    public class UserSignupInfo
+    {
+        [DataMember]
+        public string UserId { get; set; }
+        [DataMember]
+        public string Language { get; set; }
+    }
+
+    [DataContract]
     public class CredentialsValidation
     {
         [DataMember]

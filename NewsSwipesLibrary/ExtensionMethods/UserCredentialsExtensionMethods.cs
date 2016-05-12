@@ -9,6 +9,19 @@ namespace NewsSwipesLibrary
 {
     public static class UserCredentialsExtensionMethods
     {
+        public static UserCredentialsIndexDoc ToUserCredentialsIndexDoc(this UserSignupInfo signupInfo)
+        {
+            var indexDoc = new UserCredentialsIndexDoc()
+            {
+                Id = signupInfo.UserId.ToLower(),
+                Email = string.Empty,
+                Language = signupInfo.Language.ToLower(),
+                CanPost = false,
+                Streams = new string[] { }
+            };
+            return indexDoc;
+        }
+
         public static UserCredentialsIndexDoc ToUserCredentialsIndexDoc(this UserCredentials credentials)
         {
             var indexDoc = new UserCredentialsIndexDoc()
