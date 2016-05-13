@@ -177,7 +177,7 @@ namespace NewsSwipesLibrary
         {
             var htmlToImageConv = new HtmlToImageConverter();
             var jpegBytes = htmlToImageConv.GenerateImage(html, ImageFormat.Jpeg);
-            return Convert.ToBase64String(jpegBytes);
+            return String.Format("data:image/png;base64,{0}", Convert.ToBase64String(jpegBytes));
         }
     }
 }

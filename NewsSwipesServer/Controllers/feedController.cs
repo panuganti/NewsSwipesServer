@@ -164,7 +164,7 @@ namespace NewsSwipesServer.Controllers
                     {
                         Filter = filterString,
                         OrderBy = new List<string> { "createdtime desc" },
-                        Top = 100,
+                        Top = 20,
                         Skip = skip,
                         IncludeTotalResultCount = true
                     };
@@ -250,10 +250,27 @@ namespace NewsSwipesServer.Controllers
         #region Utils
         [HttpPost]
         [Route("feed/RenderHtml")]
-        public string RenderHtml([FromBody] string html)
+        public async Task<string> RenderHtml([FromBody] string id)
         {
             try
             {
+                var indexDoc = await _feedsIndex.LookupDocument<FeedsIndexDoc>(id);
+            string htmlTemplate = @"<html>
+                                        <head>
+                                            <style>
+                                                body {{
+                                                    font-family: 'Khand', sans-serif; 
+                                                    font-weight: 400; 
+                                                }}
+                                            </style>
+                                        </head>
+                                        <body>
+                                            <img src='{0}' width='300'><br>
+                                            <h2> {1} </h2> <br>
+                                            {2}
+                                        </body>
+                                    </html>";
+            string html = string.Format(htmlTemplate, indexDoc.ImageUrl, indexDoc.Title, indexDoc.Text);
                 var post = _utils.RenderHtml(html);
                 return post;
             }
